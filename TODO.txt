@@ -1,6 +1,0 @@
-TODO.txt
-
-Hoogte maps aanpassen.
-
-Kijken naar grab-list lay-out.
-
