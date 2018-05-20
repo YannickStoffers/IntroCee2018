@@ -192,7 +192,7 @@ class Form
     /** 
      * Updates the value of a field, but only if the form has not been submitted.
      */
-    public function prefill_value($field_name, $values) {
+    public function populate_field($field_name, $values) {
         if (!$this->is_submitted())
             $this->set_values($field_name, $values);
     }
@@ -201,7 +201,7 @@ class Form
      * Updates the value of multiple fields, but only if the form has not been 
      * submitted.
      */
-    public function prefill_values($values) {
+    public function populate_fields($values) {
         if (!$this->is_submitted())
             $this->set_values($values);
     }
@@ -225,6 +225,8 @@ abstract class Field
         $this->label = $label;
         $this->optional = $optional;
         $this->attributes = $attributes;
+        if (!$this->optional)
+            $this->attributes[] = 'required';
         $this->form = $form;
         if (empty($name)) 
             $name = preg_replace('/[^a-z0-9_]/i', '_', strtolower($name));
@@ -243,9 +245,12 @@ abstract class Field
      * sets error and returns false otherwise 
      */
     public function validate() {
-        if ($this->optional || ( isset($this->value) && !empty(trim($this->value)) ) )
+        if (!$this->optional && !isset($this->value) && empty(trim($this->value)) )
+            $this->errors[] = sprintf('%s is required', $this->label);
+        if (array_key_exists('maxlength', $this->attributes) && is_string($this->value) && strlen($this->value) > $this->attributes['maxlength'])
+            $this->errors[] = sprintf('Must be under %d characters.', $this->attributes['maxlength']);
+        else
             return true;
-        $this->errors[] = sprintf('%s is required', $this->label);
         return false;
     }
 
@@ -403,7 +408,9 @@ class SelectField extends Field
             $option_attributes['value'] = $value;
 
         if (isset($this->value)){
-            if ($this->value == $value)
+            if (!is_int($value) && $this->value == $value)
+                $option_attributes[] = 'selected';
+            else if (is_int($value) && $this->value == $option)
                 $option_attributes[] = 'selected';
             else if ($this->value != $value && in_array('selected', $option_attributes))
                 // this value is not selected, remove it.
@@ -517,6 +524,41 @@ class DateField extends InputField
             $this->errors[] = sprintf('%s is required', $this->label);
         else 
             $this->errors[] = sprintf('Please enter a valid date');
+
+        return false;
+    }
+}
+
+
+/**
+ * NumberField: An class for a HTML input field with type="number"
+ */
+class NumberField extends InputField
+{
+    protected $format;
+
+    public function __construct() {
+        $args = func_get_args();
+        array_unshift($args, 'number');
+        call_user_func_array(['parent', '__construct'], $args);
+    }
+
+    /** 
+     * Returns true if field has a value that satisfies the min and max values defined in the 
+     * attributes sets error and returns false otherwise 
+     */
+    public function validate() {
+        if (!parent::validate())
+            return false;
+
+        if (!is_numeric($this->value))
+            $this->errors[] = 'Please enter a numberic value';
+        else if (array_key_exists('min', $this->attributes) && $this->value < $this->attributes['min'])
+            $this->errors[] = sprintf('Please enter a number larger than %d', $this->attributes['min']);
+        else if (array_key_exists('max', $this->attributes) && $this->value > $this->attributes['max'])
+            $this->errors[] = sprintf('Please enter a number smaller than %d', $this->attributes['max']);
+        else
+            return true;
 
         return false;
     }

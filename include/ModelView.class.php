@@ -64,7 +64,7 @@ abstract class ModelView extends FormView
     protected function run_update() {
         $form = $this->get_form();
         if ($_SERVER['REQUEST_METHOD'] === 'GET')
-            $form->populate($this->get_object());
+            $form->populate_fields($this->get_object());
         return $this->run_form($form);
     }
 

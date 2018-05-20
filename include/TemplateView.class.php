@@ -45,9 +45,9 @@ class TemplateView extends View
 
     /** Handle exceptions encountered during running */
     protected function run_exception($e){
-        if ($exception instanceof HttpException){
+        if ($e instanceof HttpException){
             $html_message = $e->getHtmlMessage();
-            $status = $e->getCode();
+            $status = $e->getStatus();
         } else {
             $html_message = null;
             $status = 500;

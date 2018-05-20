@@ -11,7 +11,7 @@ class HttpException extends Exception {
         $this->status = $status;
         $this->html_message = $html_message;
 
-        if (!empty($message))
+        if (empty($message))
             $message = $html_message;
 
         parent::__construct($message, $code);
