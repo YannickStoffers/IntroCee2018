@@ -1,4 +1,4 @@
-<?php $this->extends('layout.phtml') ?>
+<?php $this->extends('../layout.phtml') ?>
 
 <?php $this->begin('content') ?>
 <div class="container container-narrow">
@@ -31,7 +31,7 @@
                 <?= $form->render_field('postal_code', ['placeholder' => '9747 AG']) ?>
                 <?= $form->render_field('city', ['placeholder' => 'Groningen']) ?>
                 <?= $form->render_field('email', ['placeholder' => 'introcee@svcover.nl']) ?>
-                <?= $form->render_field('phone', ['placeholder' => '+3150 363 6898']) ?>
+                <?= $form->render_field('phone', ['placeholder' => '+316 1234 5678']) ?>
                 <?= $form->render_field('emergency_phone', ['placeholder' => '+3150 363 6898']) ?>
                 <h3>Financial</h3>
                 <?= $form->render_field('iban', ['placeholder' => 'NL37BANK0123456789']) ?>
