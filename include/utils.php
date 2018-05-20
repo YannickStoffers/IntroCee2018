@@ -42,9 +42,6 @@ function send_mail($from, $to, $body, $subject=null, array $headers=[]) {
         sprintf('From: %s', $from)
     ], $headers);
 
-    if (!empty($bcc))
-        $headers[] = sprintf('Bcc: %s', $bcc);
-    
     if (empty($subject)) {
         // Fetch subject from rendered email body
         preg_match('{<title>(.+?)</title>}', $body, $subject);
