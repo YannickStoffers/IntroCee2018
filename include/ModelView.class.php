@@ -26,14 +26,15 @@ abstract class ModelView extends FormView
 
         if (!isset($_GET['view']))
             $this->_view = $this->default_view;
-        else if (in_array($_GET['view'], $this->views))
-            $this->_view = $_GET['view'];
         else
-            report_error('View is unknown!', 400);
+            $this->_view = $_GET['view'];
     }
 
     /** Runs the correct function based on the $_GET['view'] parameter */
     public function run_page() {
+        if (!in_array($this->_view, $this->views))
+            throw new HttpException(404, 'View not found!');
+            
         if ($this->_view === 'create')
             return $this->run_create();
         else if ($this->_view === 'read')
@@ -45,7 +46,7 @@ abstract class ModelView extends FormView
         else if ($this->_view === 'list')
             return $this->run_list();
         else
-            report_error('View is unknown!', 400);
+            throw new HttpException(404, 'View not found!');
     }
 
     /** Runs the create view */
@@ -105,7 +106,7 @@ abstract class ModelView extends FormView
         static $object = null;
 
         if (!isset($_GET['id']))
-            report_error('Please provide an ID!', 400);
+            throw new HttpException(400, 'Please provide an ID!');
 
         if ($object !== null)
             return $object;
@@ -113,7 +114,7 @@ abstract class ModelView extends FormView
         $object = $this->get_model()->get_by_id($_GET['id']);
 
         if (empty($object))
-            report_error('No object found for id', 404);
+            throw new HttpException(404, 'No object found for id');
 
         return $object;
     }

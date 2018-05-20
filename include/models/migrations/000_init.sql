@@ -9,7 +9,7 @@ CREATE TABLE `registrations` (
   `student_number` varchar(8),
   `first_name` varchar(255),
   `surname` varchar(255),
-  `birthday` date DEFAULT NULL,
+  `birthday` date,
   `address` varchar(255),
   `postal_code` varchar(255),
   `city` varchar(255),

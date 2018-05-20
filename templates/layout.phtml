@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="/static/css/bootstrap.min.css" type='text/css'>
     <link rel="stylesheet" href="/static/css/font-awesome.min.css" type='text/css'>
     <link rel="stylesheet" href="//cdl.svcover.nl/css/cdl.css" type="text/css">
-    <link rel="stylesheet" href="/static/css/myapp.css" type="text/css">
+    <link rel="stylesheet" href="/static/css/introcee.css" type="text/css">
     <?= !empty($styles) ? $styles : ''?>
 </head>
 <body>
@@ -36,6 +36,20 @@
                     <li <?php if ($page_id == 'signup'): ?>class="active"<?php endif ?> >
                         <a href="signup.php">Sign up</a>
                     </li>
+                    <?php if(cover_session_logged_in() && cover_session_in_committee(ADMIN_COMMITTEE)): ?>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-angle-down"></i>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li class="dropdown-header">Admin</li>
+                                <li><a href="signup_admin.php">Registrations</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li class="dropdown-header">Logged in as <?= $this->html(get_cover_session()->voornaam) ?></li>
+                                <li><a href="<?= cover_logout_url() ?>">Logout</a></li>
+                            </ul>
+                        </li>
+                    <?php endif; ?>
                 </ul>
             </div>
         </div>

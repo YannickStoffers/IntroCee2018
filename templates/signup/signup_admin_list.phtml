@@ -1,0 +1,70 @@
+<?php $this->extends('../layout.phtml') ?>
+
+<?php $this->begin('content') ?>
+<div class="container-fluid">
+    <header class="page-header">
+        <h1>Registrations</h1>
+        <a class="btn btn-primary" href="/signup_admin.php?view=create">Add</a>
+    </header>
+
+    <div class="table-responsive"> 
+        <table class="table table-hover table-registrations">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Surname</th>
+                    <th>Student number</th>
+                    <th>Birthday</th>
+                    <th>Address</th>
+                    <th>Postal</th>
+                    <th>City</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Emergency</th>
+                    <th>IBAN</th>
+                    <th>BIC</th>
+                    <th>Study</th>
+                    <th>Year</th>
+                    <th>Remarks</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($registrations as $participant): ?>
+                    <tr>
+                        <td><?= $this->html($participant['type']) ?></td>
+                        <td><?= $this->html($participant['first_name']) ?></td>
+                        <td><?= $this->html($participant['surname']) ?></td>
+                        <td><?= $this->html($participant['student_number']) ?></td>
+                        <td><?= $this->html($participant['birthday']) ?></td>
+                        <td clas="truncate"><?= $this->html($participant['address']) ?></td>
+                        <td><?= $this->html($participant['postal_code']) ?></td>
+                        <td><?= $this->html($participant['city']) ?></td>
+                        <td><?= $this->html($participant['email']) ?></td>
+                        <td><?= $this->html($participant['phone']) ?></td>
+                        <td><?= $this->html($participant['emergency_phone']) ?></td>
+                        <td><?= $this->html($participant['iban']) ?></td>
+                        <td><?= $this->html($participant['bic']) ?></td>
+                        <td><?= $this->html($participant['study']) ?></td>
+                        <td><?= $this->html($participant['study_year']) ?></td>
+                        <td class="truncate"><?= $this->html($participant['remarks']) ?></td>
+                        <td><?= $this->html($participant['status']) ?></td>
+                        <td class="text-right">
+                            <ul class="list-inline">
+                                <li>
+                                    <a href="/signup_admin.php?view=update&id=<?= $participant['id'] ?>">edit</a>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                <?php endforeach ?>
+                <?php if (!$registrations): ?>
+                    <tr><td colspan="18" class="text-muted text-center">Nobody has registered yet :(</td></tr>
+                <?php endif ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php $this->end() ?>

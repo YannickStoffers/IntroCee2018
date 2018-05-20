@@ -1,8 +1,8 @@
 <?php
 require_once 'include/init.php';
-require_once 'include/form.php';
+require_once 'include/SignupForm.class.php';
 
-/** Renders and processes CRUD operations for the  Model */
+/** Renders and processes Signup form */
 class SignupView extends FormView
 {
     protected $model;
@@ -15,39 +15,11 @@ class SignupView extends FormView
 
     /** Creates and returns the request form */
     protected function get_form() {
-        // Create fields
-        $study_year_options = [];
-        for ( $i = 1; $i <= 9; $i++ )
-            $study_year_options['_'.$i] = $i > 1 ? $i . ' years': $i . ' year';
-
-        $fields = [
-            'type'            => new SelectField   ('Type', $this->model::$type_options, 'First-year'),
-            'student_number'  => new StringField   ('Student number', true),
-            'first_name'      => new StringField   ('First name'),
-            'surname'         => new StringField   ('Surname'),
-            'birthday'        => new DateField     ('Date of birth', 'Y-m-d'),
-            'address'         => new StringField   ('Street name + number'),
-            'postal_code'     => new StringField   ('Postal code'),
-            'city'            => new StringField   ('Place of residence'),
-            'email'           => new EmailField    ('Email'),
-            'phone'           => new StringField   ('Phone number'),
-            'emergency_phone' => new StringField   ('Emergency contact'),
-            'iban'            => new StringField   ('IBAN'),
-            'bic'             => new StringField   ('BIC (only for non-Dutch bank accounts)', true),
-            'study'           => new SelectField   ('Field of study', $this->model::$study_options),
-            'study_year'      => new SelectField   ('I have been studying for ', $study_year_options, null, true),
-            'remarks'         => new TextAreaField ('Comments', true),
-            'mentor'          => new CheckBoxField ('I\'m a mentor', true),
-            'vegetarian'      => new CheckBoxField ('I\'m a vegetarian ', true),
-            'accept_terms'    => new CheckBoxField ('I have read and accepted the terms and conditions'),
-            'accept_costs'    => new CheckBoxField ('I accept the costs'),
-        ];
-
-        $form = new Bootstrap3Form('signup', $fields);
+        $form = new SignupForm('signup');
 
         if (cover_session_logged_in()){
             $member = get_cover_session();
-            $form->prefill_values([
+            $form->populate_fields([
                 'type' => $member->beginjaar < date('Y') ? 'Senior': 'First-year',
                 'first_name' => $member->voornaam,
                 'surname' => empty($member->tussenvoegsel) ? $member->achternaam : $member->tussenvoegsel . ' ' . $member->achternaam,
@@ -57,7 +29,7 @@ class SignupView extends FormView
                 'city' => $member->woonplaats,
                 'email' => $member->email,
                 'phone' => $member->telefoonnummer,
-                'study_year' => '_'. (date('Y') - $member->beginjaar + 1)
+                'study_year' => (date('Y') - $member->beginjaar + 1)
             ]);
         }
 
@@ -84,9 +56,7 @@ class SignupView extends FormView
     }
     
     /** Processes the data of a valid form */
-    protected function process_form_data($data) {
-        $data['study_year'] = trim($data['study_year'], '_');
-        
+    protected function process_form_data($data) {        
         // There is no field called mentor in the database, so remove it
         if ($data['mentor'])
             $data['type'] = 'Mentor';
