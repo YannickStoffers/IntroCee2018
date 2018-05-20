@@ -5,19 +5,23 @@ function form_escape($value) {
     return htmlspecialchars($value, ENT_COMPAT, 'UTF-8');
 }
 
+/** Returns HTML safe attributes */
+function form_escape_attr($data) {
+    return htmlspecialchars($data, ENT_QUOTES, 'utf-8');
+}
 
 /** Renders HTML attributes from array */
 function form_render_attributes($attributes) {
-    $attribute_html = array();
+    $attribute_html = [];
 
     foreach ($attributes as $key => $value){
         if (is_array($value))
             $value = implode(' ', $value);
 
         if (is_int($key))
-            $attribute_html[] = form_escape($value);
+            $attribute_html[] = form_escape_attr($value);
         else
-            $attribute_html[] = sprintf('%s="%s"', $key, form_escape($value));
+            $attribute_html[] = sprintf('%s="%s"', $key, form_escape_attr($value));
     }
 
     return implode(' ', $attribute_html);
@@ -34,6 +38,18 @@ class Form
     public function __construct($name, array $fields=[]) {
         $this->name = $name;
         $this->add_fields($fields);
+        $this->initialize();
+    }
+
+    /** Initializes fields with their data */
+    public function initialize() {
+        foreach ($this->fields as $field)
+            $field->initialize();
+    }
+
+    /** Returns true if the form has been submitted */
+    public function is_submitted() {
+        return $_SERVER['REQUEST_METHOD'] === 'POST';
     }
 
     /** Returns true if form is submitted and all fields are validated */
@@ -48,23 +64,40 @@ class Form
         return $result;
     }
 
-    public function is_submitted() {
-        return $_SERVER['REQUEST_METHOD'] === 'POST';
+    /** Returns HTML string of the form */
+    public function render(array $attributes=[], $action=null) {
+        $attributes['id'] = $this->name;
+        $attributes['method'] = 'POST';
+
+        if(!empty($action))
+            $attributes['action'] = $action;
+
+        return sprintf('<form %s>%s %s</form>',
+            form_render_attributes($attributes),
+            $this->render_body(),
+            $this->render_buttons()
+        );
     }
     
-    /** Returns HTML string with errors of a field */
-    protected function render_field_errors($field, $attributes) {
-        $error_html = array();
-        $errors = array_unique($field->errors);
-        foreach ($errors as $error) {
-            if ($error === true) 
-                continue;
+    /** Returns HTML string of a field by key, with label and errors in a container element */
+    public function render_field($key, array $attributes=[], array $error_attributes=[], array $parent_attributes=[]) {
+        return $this->_render_field($this->fields[$key], $attributes, $error_attributes, $parent_attributes);
+    }
 
-            $error_html[] = sprintf('<span %s>%s</span>', 
-                form_render_attributes($attributes),
-                form_escape($error));
-        }
-        return implode(' ', $error_html);
+    /** Returns HTML string of the form body */
+    protected function render_body() {
+        $body_html = [];
+        
+        foreach ($this->fields as $field)
+            $body_html[] = $this->_render_field($field);
+
+
+        return implode(' ', $body_html);
+    }
+
+    /** Returns HTML string of the form buttons*/
+    protected function render_buttons() {
+        return '<button type="submit">Submit</button>';
     }
 
     /** Returns HTML string of a field, with label and errors in a container element */
@@ -83,39 +116,16 @@ class Form
         );
     }
     
-    /** Returns HTML string of a field by key, with label and errors in a container element */
-    public function render_field($key, array $attributes=[], array $error_attributes=[], array $parent_attributes=[]) {
-        return $this->_render_field($this->fields[$key], $attributes, $error_attributes, $parent_attributes);
-    }
-
-    /** Returns HTML string of the body of the form */
-    protected function render_body() {
-        $body_html = array();
-        
-        foreach ($this->fields as $field)
-            $body_html[] = $this->_render_field($field);
-
-
-        return implode(' ', $body_html);
-    }
-
-    protected function render_buttons() {
-        return '<button type="submit">Submit</button>';
-    }
-
-    /** Returns HTML string of the form */
-    public function render(array $attributes=[], $action=null) {
-        $attributes['id'] = $this->name;
-        $attributes['method'] = 'POST';
-
-        if(!empty($action))
-            $attributes['action'] = $action;
-
-        return sprintf('<form %s>%s %s</form>',
-            form_render_attributes($attributes),
-            $this->render_body(),
-            $this->render_buttons()
-        );
+    /** Returns HTML string with errors of a field */
+    protected function render_field_errors($field, $attributes) {
+        $error_html = [];
+        $errors = array_unique($field->errors);
+        foreach ($errors as $error) {
+            $error_html[] = sprintf('<span %s>%s</span>', 
+                form_render_attributes($attributes),
+                form_escape($error));
+        }
+        return implode(' ', $error_html);
     }
 
     /** Add a fields */
@@ -171,6 +181,7 @@ class Form
         $this->fields[$field_name]->value = $value;
     }
     
+    /** Updates the values of multiple fields */
     public function set_values($values) {
         foreach ($values as $field => $value) {
             if (isset($this->fields[$field]))
@@ -178,12 +189,18 @@ class Form
         }
     }
 
-    /** Updates the values of multiple fields */
+    /** 
+     * Updates the value of a field, but only if the form has not been submitted.
+     */
     public function prefill_value($field_name, $values) {
         if (!$this->is_submitted())
             $this->set_values($field_name, $values);
     }
 
+    /** 
+     * Updates the value of multiple fields, but only if the form has not been 
+     * submitted.
+     */
     public function prefill_values($values) {
         if (!$this->is_submitted())
             $this->set_values($values);
@@ -199,10 +216,10 @@ abstract class Field
     protected $name;
     protected $label;
     protected $form;
-    public $optional;
-    public $attributes;
+    protected $optional;
+    protected $attributes;
     public $value;
-    public $errors = array();
+    public $errors = [];
 
     public function __construct($label, $optional=false, array $attributes=[], $name='', $form=null) {
         $this->label = $label;
@@ -212,6 +229,13 @@ abstract class Field
         if (empty($name)) 
             $name = preg_replace('/[^a-z0-9_]/i', '_', strtolower($name));
         $this->set_name($name);
+    }
+
+    /** Initializes the field data from POST */
+    public function initialize() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST[$this->name])){
+            $this->value = $_POST[$this->name];
+        }
     }
 
     /** 
@@ -233,13 +257,12 @@ abstract class Field
     /** Returns HTML string of the field */
     abstract public function render(array $attributes=[]);
 
+    /** Sets the name of the field */
     public function set_name($name) {
         $this->name = $name;
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST[$this->name])){
-            $this->value = $_POST[$this->name];
-        }
     }
 
+    /** Sets the form the field belongs to */
     public function set_form($form) {
         $this->form = $form;
     }
@@ -256,7 +279,7 @@ class InputField extends Field
     public function __construct() {
         $args = func_get_args();
         $this->type = array_shift($args);
-        call_user_func_array(array('parent', '__construct'), $args);
+        call_user_func_array(['parent', '__construct'], $args);
     }
 
     /** Returns HTML string of the field */
@@ -298,11 +321,6 @@ class TextAreaField extends Field
  */
 class CheckBoxField extends Field
 {
-    public function __construct() {
-        $args = func_get_args();
-        call_user_func_array(array('parent', '__construct'), $args);
-    }
-
     /** 
      * Returns true if field has a value or is optional, 
      * sets error and returns false otherwise 
@@ -310,7 +328,7 @@ class CheckBoxField extends Field
     public function validate() {
         if ($this->optional || !empty($this->value))
             return true;
-        $this->errors[] = true;
+        $this->errors[] = 'Required field';
         return false;
     }
 
@@ -434,7 +452,7 @@ class StringField extends InputField
     public function __construct() {
         $args = func_get_args();
         array_unshift($args, 'text');
-        call_user_func_array(array('parent', '__construct'), $args);
+        call_user_func_array(['parent', '__construct'], $args);
     }
 }
 
@@ -447,7 +465,7 @@ class EmailField extends InputField
     public function __construct() {
         $args = func_get_args();
         array_unshift($args, 'email');
-        call_user_func_array(array('parent', '__construct'), $args);
+        call_user_func_array(['parent', '__construct'], $args);
     }
 
     /** 
@@ -548,7 +566,7 @@ class Bootstrap3Form extends Form
         );
     }
 
-    /** Returns a Bootstrap 3 style HTML string of the body of the form */
+    /** Returns a Bootstrap 3 style HTML string of the form buttons */
     protected function render_buttons() {
         return '<div class="form-group"><button type="submit" class="btn btn-primary">Submit</button></div>';
     }
