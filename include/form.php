@@ -23,7 +23,6 @@ function form_render_attributes($attributes) {
     return implode(' ', $attribute_html);
 }
 
-
 /**
  * Form: A generic class to render and validate an HTML form
  */
@@ -39,7 +38,7 @@ class Form
 
     /** Returns true if form is submitted and all fields are validated */
     public function validate() {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+        if (!$this->is_submitted())
             return false;
 
         $result = true;
@@ -47,6 +46,10 @@ class Form
             $result = $field->validate() && $result;
 
         return $result;
+    }
+
+    public function is_submitted() {
+        return $_SERVER['REQUEST_METHOD'] === 'POST';
     }
     
     /** Returns HTML string with errors of a field */
@@ -65,7 +68,7 @@ class Form
     }
 
     /** Returns HTML string of a field, with label and errors in a container element */
-    protected function render_field($field, array $attributes=[], array $error_attributes=[], array $parent_attributes=[]) {
+    protected function _render_field($field, array $attributes=[], array $error_attributes=[], array $parent_attributes=[]) {
         if (get_class($field) === 'CheckBoxField')
             return sprintf('<div %s>%s %s</div>', 
                 form_render_attributes($parent_attributes),
@@ -81,8 +84,8 @@ class Form
     }
     
     /** Returns HTML string of a field by key, with label and errors in a container element */
-    protected function render_field_by_key($key, array $attributes=[], array $error_attributes=[], array $parent_attributes=[]) {
-        return $this->render_field($this->fields[$key], $attributes, $error_attributes, $parent_attributes);
+    public function render_field($key, array $attributes=[], array $error_attributes=[], array $parent_attributes=[]) {
+        return $this->_render_field($this->fields[$key], $attributes, $error_attributes, $parent_attributes);
     }
 
     /** Returns HTML string of the body of the form */
@@ -90,11 +93,14 @@ class Form
         $body_html = array();
         
         foreach ($this->fields as $field)
-            $body_html[] = $this->render_field($field);
+            $body_html[] = $this->_render_field($field);
 
-        $body_html[] = '<button type="submit">Submit</button>';
 
         return implode(' ', $body_html);
+    }
+
+    protected function render_buttons() {
+        return '<button type="submit">Submit</button>';
     }
 
     /** Returns HTML string of the form */
@@ -105,26 +111,24 @@ class Form
         if(!empty($action))
             $attributes['action'] = $action;
 
-        return sprintf('<form %s>%s</form>',
+        return sprintf('<form %s>%s %s</form>',
             form_render_attributes($attributes),
-            $this->render_body()
+            $this->render_body(),
+            $this->render_buttons()
         );
     }
 
     /** Add a fields */
     public function add_field($field_name, $field) {
         $field->set_name($field_name);
-        $field->set_form_name($this->name);
+        $field->set_form($this);
         $this->fields[$field_name] = $field;
     }
 
     /** Adds multiple fields from field_name => field pairs*/
     public function add_fields($fields) {
-        foreach ($fields as $field_name => $field) {
-            $field->set_name($field_name);
-            $field->set_form_name($this->name);
-        }
-        $this->fields = array_merge($this->fields, $fields);
+        foreach ($fields as $field_name => $field)
+            $this->add_field($field_name, $field);
     }
 
     /** Delete a field */
@@ -140,6 +144,11 @@ class Form
     /** Returns list of fieldname => field pairs */
     public function get_fields() {
         return $this->fields;
+    }
+
+    /** Returns list of fieldname => field pairs */
+    public function get_name() {
+        return $this->name;
     }
 
     /** Returns the value of a field */
@@ -161,13 +170,23 @@ class Form
     public function set_value($field_name, $value) {
         $this->fields[$field_name]->value = $value;
     }
-
-    /** Updates the values of multiple fields */
+    
     public function set_values($values) {
         foreach ($values as $field => $value) {
             if (isset($this->fields[$field]))
                 $this->fields[$field]->value = $value;
         }
+    }
+
+    /** Updates the values of multiple fields */
+    public function prefill_value($field_name, $values) {
+        if (!$this->is_submitted())
+            $this->set_values($field_name, $values);
+    }
+
+    public function prefill_values($values) {
+        if (!$this->is_submitted())
+            $this->set_values($values);
     }
 }
 
@@ -179,22 +198,20 @@ abstract class Field
 {
     protected $name;
     protected $label;
-    protected $form_name;
+    protected $form;
     public $optional;
     public $attributes;
     public $value;
     public $errors = array();
 
-    public function __construct($label, $optional=false, array $attributes=[], $name='', $form_name='') {
+    public function __construct($label, $optional=false, array $attributes=[], $name='', $form=null) {
         $this->label = $label;
         $this->optional = $optional;
         $this->attributes = $attributes;
-        $this->form_name = $form_name;
-        $this->name = $name;
+        $this->form = $form;
         if (empty($name)) 
-            $this->name = preg_replace('/[^a-z0-9_]/i', '_', strtolower($name));
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST[$this->name]))
-            $this->value = $_POST[$this->name];
+            $name = preg_replace('/[^a-z0-9_]/i', '_', strtolower($name));
+        $this->set_name($name);
     }
 
     /** 
@@ -214,14 +231,17 @@ abstract class Field
     }
 
     /** Returns HTML string of the field */
-    abstract public function render($attributes);
+    abstract public function render(array $attributes=[]);
 
     public function set_name($name) {
         $this->name = $name;
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST[$this->name])){
+            $this->value = $_POST[$this->name];
+        }
     }
 
-    public function set_form_name($form_name) {
-        $this->form_name = $form_name;
+    public function set_form($form) {
+        $this->form = $form;
     }
 }
 
@@ -240,11 +260,11 @@ class InputField extends Field
     }
 
     /** Returns HTML string of the field */
-    public function render($attributes) {
+    public function render(array $attributes=[]) {
         $attributes = array_merge($this->attributes, $attributes);
         $attributes['type'] = $this->type;
         $attributes['name'] = $this->name;
-        $attributes['id'] = $this->form_name . '-' . $this->name;
+        $attributes['id'] = $this->form->get_name() . '-' . $this->name;
 
         if (isset($this->value) )
             $attributes['value'] = $this->value;
@@ -260,10 +280,10 @@ class InputField extends Field
 class TextAreaField extends Field
 {
     /** Returns HTML string of the field */
-    public function render($attributes) {
+    public function render(array $attributes=[]) {
         $attributes = array_merge($this->attributes, $attributes);
         $attributes['name'] = $this->name;
-        $attributes['id'] = $this->form_name . '-' . $this->name;
+        $attributes['id'] = $this->form->get_name() . '-' . $this->name;
 
         $value = isset($this->value) ? $this->value : '';
 
@@ -295,16 +315,16 @@ class CheckBoxField extends Field
     }
 
     /** Returns HTML string of the field and its label */
-    public function render_with_label($attributes) {
+    public function render_with_label(array $attributes=[]) {
         return sprintf('<label>%s %s</label>', $this->render($attributes), $this->label);
     }
 
     /** Returns HTML string of the field */
-    public function render($attributes) {
+    public function render(array $attributes=[]) {
         $attributes = array_merge($this->attributes, $attributes);
         $attributes['type'] = 'checkbox';
         $attributes['name'] = $this->name;
-        $attributes['id'] = $this->form_name . '-' . $this->name;
+        $attributes['id'] = $this->form->get_name() . '-' . $this->name;
 
         if (!empty($this->value))
             $attributes[] = 'checked';
@@ -321,9 +341,11 @@ class SelectField extends Field
 {   
     protected $options;
 
-    public function __construct($label, $options, $optional=false, array $attributes=[], $name='', $form_name='') {
+    public function __construct($label, $options, $default=null, $optional=false, array $attributes=[], $name='', $form=null) {
         $this->options = $options;
-        parent::__construct($label, $optional, $attributes, $name, $form_name);
+        if (!empty($default))
+            $this->value = $default;
+        parent::__construct($label, $optional, $attributes, $name, $form);
     }
 
     /** 
@@ -333,9 +355,15 @@ class SelectField extends Field
     public function validate() {
         $value = isset($this->value) ? $this->value : '';
         
+        $has_mapped_options = count(array_filter(array_keys($this->options), function($value){
+            return !is_int($value);
+        }));
+
         if ($this->optional && $value === '')
             return true;
-        else if (array_key_exists($value, $this->options))
+        else if ($has_mapped_options && array_key_exists($value, $this->options))
+            return true;
+        else if ( !$has_mapped_options && in_array($value, $this->options))
             return true;
 
         if ($value === '' )
@@ -370,10 +398,10 @@ class SelectField extends Field
     }
 
     /** Returns HTML string of the field */
-    public function render($attributes) {
+    public function render(array $attributes=[]) {
         $attributes = array_merge($this->attributes, $attributes);
         $attributes['name'] = $this->name;
-        $attributes['id'] = $this->form_name . '-' . $this->name;
+        $attributes['id'] = $this->form->get_name() . '-' . $this->name;
 
         $options_html = [];
 
@@ -452,9 +480,9 @@ class DateField extends InputField
 {
     protected $format;
 
-    public function __construct($label, $format, $optional=false, array $attributes=[], $name='', $form_name='') {
+    public function __construct($label, $format, $optional=false, array $attributes=[], $name='', $form=null) {
         $this->format = $format;
-        parent::__construct('date', $label, $optional, $attributes, $name, $form_name);
+        parent::__construct('date', $label, $optional, $attributes, $name, $form);
     }
 
     /** 
@@ -482,40 +510,46 @@ class DateField extends InputField
  */
 class Bootstrap3Form extends Form
 {
-    /** Returns a Bootstrap 3 style HTML string of the body of the form */
-    protected function render_body() {
-        $body_html = array();
-        
-        foreach ($this->fields as $field) {
-            $parent_attrs = array('class' => array());
-            
-            // Highlight field on error
-            if (!empty($field->errors))
-                $parent_attrs['class'][] = 'has-error';
+    /** Returns a Bootstrap 3 style HTML string of a field */
+    protected function _render_field($field, array $attributes=[], array $error_attributes=[], array $parent_attributes=[]) {
+        if (!isset($attributes['class']))
+            $attributes = array_merge(['class' => []], $attributes);
+        elseif (is_string($attributes['class']))
+            $attributes['class'] = [$attributes['class']];
 
-            // Render field, have special treatement for checkboxes
-            if (get_class($field) === 'CheckBoxField'){
-                $parent_attrs['class'][] = 'checkbox';
-                $body_html[] = $this->render_field(
-                    $field,
-                    array(), 
-                    array('class' => 'help-block'), 
-                    $parent_attrs
-                );    
-            } else {
-                $parent_attrs['class'][] = 'form-group';
-                $body_html[] = $this->render_field(
-                    $field, 
-                    array('class' => 'form-control'), 
-                    array('class' => 'help-block'), 
-                    $parent_attrs
-                );    
-            }
+        if (!isset($error_attributes['class']))
+            $error_attributes = array_merge(['class' => []], $error_attributes);
+        elseif (is_string($error_attributes['class']))
+            $error_attributes['class'] = [$error_attributes['class']];
+        $error_attributes['class'][] = 'help-block';
+
+        if (!isset($parent_attributes['class']))
+            $parent_attributes = array_merge(['class' => []], $parent_attributes);
+        elseif (is_string($parent_attributes['class']))
+            $parent_attributes['class'] = [$parent_attributes['class']];
+        
+        // Highlight field on error
+        if (!empty($field->errors))
+            $parent_attributes['class'][] = 'has-error';
+
+        // Render field, have special treatement for checkboxes
+        if (get_class($field) === 'CheckBoxField')
+            $parent_attributes['class'][] = 'checkbox';
+        else {
+            $attributes['class'][] = 'form-control';
+            $parent_attributes['class'][] = 'form-group';
         }
 
-        // Add submit button
-        $body_html[] = '<button type="submit" class="btn btn-primary">Submit</button>';
+        return parent::_render_field(
+            $field,
+            $attributes,
+            $error_attributes,
+            $parent_attributes
+        );
+    }
 
-        return implode(' ', $body_html);
+    /** Returns a Bootstrap 3 style HTML string of the body of the form */
+    protected function render_buttons() {
+        return '<div class="form-group"><button type="submit" class="btn btn-primary">Submit</button></div>';
     }
 }

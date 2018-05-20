@@ -14,8 +14,10 @@ if (!defined('ADMIN_COMMITTEE'))
 function get_db() {
     static $db;
 
-    if (!$db)
+    if (!$db){
         $db = new PDO(DB_DSN, DB_USER, DB_PASSWORD);
+        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    }
 
     return $db;
 }
