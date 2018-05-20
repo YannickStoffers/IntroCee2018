@@ -6,6 +6,7 @@ require_once 'include/form.php';
 class SignupView extends FormView
 {
     protected $model;
+    protected $template_base_name = 'templates/signup/signup';
 
     public function __construct(){
         parent::__construct('Sign up', 'signup');
@@ -74,7 +75,7 @@ class SignupView extends FormView
                 'message' => $e->getMessage()
             ];
         }
-        return $this->render_template('templates/signup_form_processed.phtml', $context);
+        return $this->render_template($this->get_template('form_processed'), $context);
     }
 
     /** Renders an invalid form */

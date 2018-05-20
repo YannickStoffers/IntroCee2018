@@ -13,8 +13,8 @@ abstract class FormView extends TemplateView
     // The url to redirect to after (successful) form processing
     protected $success_url;
 
-    // The name of the template to use (defaults to 'templates/<page_id>_form.phtml')
-    protected $page_template;
+    // The base name of the template to use (defaults to 'templates/<page_id>')
+    protected $template_base_name;
 
     public function __construct($title, $page_id='') {
         parent::__construct($title, $page_id);
@@ -60,12 +60,5 @@ abstract class FormView extends TemplateView
         if (!isset($this->success_url))
             die('Please define the success_url property or override the get_success_url method!');
         return $this->success_url;
-    }
-
-    /** Returns the name of the template to use to render the form */
-    protected function get_template($view_name='form') {
-        if (isset($this->page_template))
-            return $this->page_template;
-        return sprintf('templates/%s_%s.phtml', $this->page_id, $view_name);
     }
 }

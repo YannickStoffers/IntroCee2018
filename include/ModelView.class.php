@@ -136,9 +136,6 @@ abstract class ModelView extends FormView
         if (empty($view_name))
             $view_name = $this->_view;
 
-        if (isset($this->template_base_name))
-            return sprintf('%s_%s.phtml', $this->template_base_name, $view_name);
-
-        return sprintf('templates/%s_%s.phtml', $this->page_id, $view_name);
+        return parent::get_template($view_name);
     }
 }

@@ -13,6 +13,9 @@ class TemplateView extends View
     // The template to use for the content of this page (defaults to /templates/<page_id>.phtml)
     protected $template;
 
+    // The base name of the template to use (defaults to 'templates/<page_id>')
+    protected $template_base_name;
+    
     // The title of the page
     protected $title;
 
@@ -76,8 +79,15 @@ class TemplateView extends View
     protected function get_template($view_name='') {
         if (isset($this->template))
             return $this->template;
+
+        if (isset($this->template_base_name))
+            $base_name = $this->template_base_name;
+        else
+            $base_name =  sprintf('templates/%s', $this->page_id);
+
         if (empty($view_name))
-            return sprintf('templates/%s.phtml', $this->page_id);
-        return sprintf('templates/%s_%s.phtml', $this->page_id, $view_name);
+            return sprintf('%s.phtml', $base_name);
+
+        return sprintf('%s_%s.phtml', $base_name, $view_name);
     }
 }
