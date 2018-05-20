@@ -21,7 +21,7 @@ class SignupView extends FormView
             $study_year_options['_'.$i] = $i > 1 ? $i . ' years': $i . ' year';
 
         $fields = [
-            'type'            => new SelectField   ('Type', ['First-year', 'Senior'], 'First-year'),
+            'type'            => new SelectField   ('Type', $this->model::$type_options, 'First-year'),
             'student_number'  => new StringField   ('Student number', true),
             'first_name'      => new StringField   ('First name'),
             'surname'         => new StringField   ('Surname'),

@@ -24,6 +24,7 @@ CREATE TABLE `registrations` (
   `vegetarian` tinyint(1) NOT NULL DEFAULT '0',
   `accept_terms` tinyint(1) NOT NULL DEFAULT '0',
   `accept_costs` tinyint(1) NOT NULL DEFAULT '0',
+  `status` enum('registered','cancelled','waiting_list') NOT NULL DEFAULT 'registered',
   PRIMARY KEY (`id`),
   UNIQUE (`email`)
-);
+) ENGINE = INNODB;

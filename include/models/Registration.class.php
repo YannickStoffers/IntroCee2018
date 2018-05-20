@@ -5,6 +5,7 @@ class Registration extends Model
 {
     public static $type_options = ['First-year','Senior','Mentor','Board','HEROcee','IntroCee','PhotoCee'];
     public static $study_options = ['Artificial Intelligence','Computing Science','Other'];
+    public static $status_options = ['registered','cancelled','waiting_list'];
 
     public function __construct($db) {
         parent::__construct($db, 'registrations');
