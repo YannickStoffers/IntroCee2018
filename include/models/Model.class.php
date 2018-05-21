@@ -21,12 +21,11 @@ abstract class Model
 
         $statement->execute($input_parameters);
 
-        if ( strncasecmp($query, 'insert', 6) === 0 || strncasecmp($query, 'update', 6) === 0 )
-            // cannot do fetchAll for insert and updat queries
-            return true;
+        if ( strncasecmp($query, 'select', 6) === 0 )
+            // can only do fetchAll for non-select queries
+            return $statement->fetchAll(PDO::FETCH_ASSOC);
 
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
-
+        return true;
     }
     
     /**
