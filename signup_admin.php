@@ -23,16 +23,10 @@ class SignupAdminView extends ModelView
             return parent::run_page();
     }
 
-    /** Run the list view and make admins and non-admins see a different set of subdomains */
-    protected function run_list() {
-        $registrations = $this->get_model()->get();
-        return $this->render_template($this->get_template(), ['registrations' => $registrations]);
-    }
-
     /** Create and returns the form to use for create and update */
     protected function get_form() {
         $form = new SignupForm('registration', false);
-        $form->add_field('status',  new SelectField('Status', $this->get_model()::$status_options, 'registered'));
+        $form->add_field('status',  new SelectField('Status', $this->get_model()::$status_options));
         $form->delete_field('mentor');
         return $form;
     }

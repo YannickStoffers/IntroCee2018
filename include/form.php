@@ -132,6 +132,7 @@ class Form
     public function add_field($field_name, $field) {
         $field->set_name($field_name);
         $field->set_form($this);
+        $field->initialize();
         $this->fields[$field_name] = $field;
     }
 
