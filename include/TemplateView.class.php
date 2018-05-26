@@ -22,9 +22,9 @@ class TemplateView extends View
     // The ID of the page
     protected $page_id;
 
-    public function __construct($title, $page_id='') {
-        $this->title = $title;
+    public function __construct($page_id, $title='') {
         $this->page_id = $page_id;
+        $this->title = $title;
     }
 
     /** Run the view */
@@ -67,12 +67,16 @@ class TemplateView extends View
 
     /** Render a template */
     protected function render_template($template, array $context=[]) {
-        $default_context = [
+        $templ = new Template($template, array_merge($this->get_default_context(), $context));
+        return $templ->render();
+    }
+
+    /** Returns the default context */
+    protected function get_default_context() {        
+        return [
             'title' => $this->title,
             'page_id' => $this->page_id,
         ];
-        $templ = new Template($template, array_merge($default_context, $context));
-        return $templ->render();
     }
 
     /** Returns the name of the template to use */

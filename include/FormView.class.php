@@ -13,13 +13,6 @@ abstract class FormView extends TemplateView
     // The url to redirect to after (successful) form processing
     protected $success_url;
 
-    // The base name of the template to use (defaults to 'templates/<page_id>')
-    protected $template_base_name;
-
-    public function __construct($title, $page_id='') {
-        parent::__construct($title, $page_id);
-    }
-
     /** Run the page logic and render its content */
     protected function run_page() {
         $form = $this->get_form();
@@ -51,14 +44,14 @@ abstract class FormView extends TemplateView
     /** Returns this Form object to use */
     protected function get_form() {
         if (!isset($this->form))
-            die('Please define the form property or override the get_form method!');
+            throw new RuntimeException('Please define the form property or override the get_form method!');
         return $this->form;
     }
 
     /** Returns the url to redirect to after (successful) processing */
     protected function get_success_url() {
         if (!isset($this->success_url))
-            die('Please define the success_url property or override the get_success_url method!');
+            throw new RuntimeException('Please define the success_url property or override the get_success_url method!');
         return $this->success_url;
     }
 }

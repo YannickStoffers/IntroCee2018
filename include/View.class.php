@@ -5,12 +5,6 @@
  */
 abstract class View
 {
-
-    public function __construct() {
-        $this->title = $title;
-        $this->page_id = $page_id;
-    }
-
     /** Run the view */
     abstract public function run();
 

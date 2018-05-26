@@ -9,7 +9,7 @@ class SignupForm extends Bootstrap3Form
         $model = get_model('Registration');
 
         $fields = [
-            'type'            => new SelectField   ('Type', $model::$type_options, 'First-year'),
+            'type'            => new SelectField   ('Type', $model::$type_options),
             'student_number'  => new StringField   ('Student number',                         true,     ['maxlength' => 8]),
             'first_name'      => new StringField   ('First name',                             !$strict, ['maxlength' => 255]),
             'surname'         => new StringField   ('Surname',                                !$strict, ['maxlength' => 255]),

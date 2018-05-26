@@ -8,7 +8,7 @@ abstract class Model
     protected $db;
     protected $table;
 
-    public function __construct($db, $table){
+    public function __construct($db, $table=null){
         $this->db = $db;
         $this->table = $table;
     }
@@ -32,8 +32,7 @@ abstract class Model
      * Query the database with any query and return only the first row
      * (borrowed from the Cover website)
      */
-    protected function query_first($query, array $input_parameters=[])
-    {
+    protected function query_first($query, array $input_parameters=[]) {
         $result = $this->query($query, $input_parameters);
         
         if (is_string($result)) {
@@ -56,21 +55,68 @@ abstract class Model
      * Returns a correctly formatted string with conditions
      */
     private function format_conditions(array $conditions, &$params) {
-        $query = 'WHERE 1=1';
+        $simple_operators = [ 'eq' => '=', 'ne' => '<>', 'lt' => '<', 'lte' => '<=', 'gt' => '>', 'gte' => '>=' ];
 
-        foreach ($conditions as $condition) {
-            $query .= ' AND ';
-            $query .= '`' .$condition[0] . '` ' . $condition[1] . ' :where_' . $condition[0];
-            $params['where_' . $condition[0]] = $condition[2];
+        $atoms = [];
+        foreach ($conditions as $key => $value) {
+            $parts = explode('__', $key, 2);
+            if (count($parts) > 1){
+                $field = $parts[0];
+                $operator = $parts[1];
+            } else {
+                $field = $parts[0];
+                $operator = 'eq';
+            }
+
+            $format = '';
+            $ident = sprintf('where_%s_%s', $field, $operator);
+
+            if (array_key_exists($operator, $simple_operators)) {
+                $params[$ident] = $value;
+                $format = '`%s` ' . $simple_operators[$operator] . ' :%s';
+            } elseif ($operator === 'in') {
+                if (!is_array($value))
+                    throw new InvalidArgumentException("in-operator in '$field' condition expects an array.");
+
+                if (count($value) === 0) {
+                    $format = '`%s` IS NULL';
+                    unset($ident);
+                } else {
+                    // create string like ":where_field_in_0,:where_field_in_1"
+                    $ident = implode(',', array_map( function ($n) use ($field) { 
+                        return sprintf(':where_%s_in_%s', $field, $n); 
+                    }, array_keys($value) ));
+
+                    foreach ($value as $k => $v)
+                        $params[sprintf('where_%s_in_%s', $field, $k)] = $v;
+
+                    $format = '`%s` IN (%s)';
+                } 
+            } elseif ($operator === 'contains') {
+                $params[$ident] = '%'. $value .'%';
+                $format[] = '`%s` LIKE :%s';
+            } elseif ($operator === 'isnull') {
+                $format = $value ? '`%s` IS NULL' : '`%s` IS NOT NULL';
+                unset($ident);
+            } else {
+                throw new InvalidArgumentException("Unknown operator '$operator' in '$field' condition.");    
+            }
+
+            $atoms[] = isset($ident) ? sprintf($format, $field, $ident) : sprintf($format, $field);
         }
 
-        return $query;
+        if (!empty($atoms))
+            return 'WHERE ' . implode(' AND ', $atoms);
+        return '';
     }
 
     /**
      * Select data from table
      */
     public function get(array $conditions=[], $get_first=false) {
+        if (!$this->table)
+            throw new RuntimeException(get_class($this) . '::$table is not set');
+
         $query = 'SELECT * FROM `' . $this->table . '`';
         $params = [];
 
@@ -88,14 +134,17 @@ abstract class Model
      * Select first entry from table matched by ID
      */
     public function get_by_id($id, $field='id') {
-        return $this->get([[$field, '=', $id]], true);
+        return $this->get([$field => $id], true);
     }
 
 
     /**
      * Insert one item into the DB
      */
-    public function create($values) {
+    public function create(array $values) {
+        if (!$this->table)
+            throw new RuntimeException(get_class($this) . '::$table is not set');
+
         $keys = array_keys($values);
         $placeholders = array_map(function ($k) { return ':'.$k; }, $keys);
 
@@ -111,6 +160,9 @@ abstract class Model
      * Perform update with data and conditions
      */
     public function update(array $data, array $conditions=[]) {
+        if (!$this->table)
+            throw new RuntimeException(get_class($this) . '::$table is not set');
+
         $query = 'UPDATE `' . $this->table . '` SET ';
 
         $params = [];
@@ -136,7 +188,7 @@ abstract class Model
      * Perform update for a specific id
      */
     public function update_by_id($id, array $data, $field='id') {
-        $this->update($data, [[$field, '=', $id]]);
+        $this->update($data, [$field => $id]);
     }
 
 
@@ -144,6 +196,9 @@ abstract class Model
      * Perform deletion
      */
     public function delete(array $conditions) {
+        if (!$this->table)
+            throw new RuntimeException(get_class($this) . '::$table is not set');
+
         $query = 'DELETE FROM `' . $this->table . '`';
         
         $params = [];
@@ -151,7 +206,7 @@ abstract class Model
         if (!empty($conditions))
             $query .= ' ' . $this->format_conditions($conditions, $params);
         else
-            die('Delete without conditions is not allowed!');
+            throw new LengthException('Delete without conditions is not allowed!');
 
         $this->query($query, $params);
     }
@@ -161,6 +216,6 @@ abstract class Model
      * Perform deletion for a specific ID
      */
     public function delete_by_id($id, $field='id') {
-        $this->delete([[$field, '=', $id]]);
+        $this->delete([$field => $id]);
     }
 }

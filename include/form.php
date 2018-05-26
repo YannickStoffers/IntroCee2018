@@ -1,17 +1,17 @@
 <?php
 
 /** Returns HTML safe value */
-function form_escape($value) {
+function _form_escape($value) {
     return htmlspecialchars($value, ENT_COMPAT, 'UTF-8');
 }
 
 /** Returns HTML safe attributes */
-function form_escape_attr($data) {
+function _form_escape_attr($data) {
     return htmlspecialchars($data, ENT_QUOTES, 'utf-8');
 }
 
 /** Renders HTML attributes from array */
-function form_render_attributes($attributes) {
+function _form_render_attributes($attributes) {
     $attribute_html = [];
 
     foreach ($attributes as $key => $value){
@@ -19,9 +19,9 @@ function form_render_attributes($attributes) {
             $value = implode(' ', $value);
 
         if (is_int($key))
-            $attribute_html[] = form_escape_attr($value);
+            $attribute_html[] = _form_escape_attr($value);
         else
-            $attribute_html[] = sprintf('%s="%s"', $key, form_escape_attr($value));
+            $attribute_html[] = sprintf('%s="%s"', $key, _form_escape_attr($value));
     }
 
     return implode(' ', $attribute_html);
@@ -38,7 +38,6 @@ class Form
     public function __construct($name, array $fields=[]) {
         $this->name = $name;
         $this->add_fields($fields);
-        $this->initialize();
     }
 
     /** Initializes fields with their data */
@@ -65,7 +64,7 @@ class Form
     }
 
     /** Returns HTML string of the form */
-    public function render(array $attributes=[], $action=null) {
+    public function render($action=null, array $attributes=[]) {
         $attributes['id'] = $this->name;
         $attributes['method'] = 'POST';
 
@@ -73,7 +72,7 @@ class Form
             $attributes['action'] = $action;
 
         return sprintf('<form %s>%s %s</form>',
-            form_render_attributes($attributes),
+            _form_render_attributes($attributes),
             $this->render_body(),
             $this->render_buttons()
         );
@@ -104,12 +103,12 @@ class Form
     protected function _render_field($field, array $attributes=[], array $error_attributes=[], array $parent_attributes=[]) {
         if (get_class($field) === 'CheckBoxField')
             return sprintf('<div %s>%s %s</div>', 
-                form_render_attributes($parent_attributes),
+                _form_render_attributes($parent_attributes),
                 $field->render_with_label($attributes),
                 $this->render_field_errors($field, $error_attributes)
             );
         return sprintf('<div %s>%s %s %s</div>', 
-            form_render_attributes($parent_attributes),
+            _form_render_attributes($parent_attributes),
             $field->render_label(),
             $field->render($attributes),
             $this->render_field_errors($field, $error_attributes)
@@ -122,8 +121,8 @@ class Form
         $errors = array_unique($field->errors);
         foreach ($errors as $error) {
             $error_html[] = sprintf('<span %s>%s</span>', 
-                form_render_attributes($attributes),
-                form_escape($error));
+                _form_render_attributes($attributes),
+                _form_escape($error));
         }
         return implode(' ', $error_html);
     }
@@ -157,7 +156,7 @@ class Form
         return $this->fields;
     }
 
-    /** Returns list of fieldname => field pairs */
+    /** Returns the forms name */
     public function get_name() {
         return $this->name;
     }
@@ -236,8 +235,8 @@ abstract class Field
 
     /** Initializes the field data from POST */
     public function initialize() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST[$this->name])){
-            $this->value = $_POST[$this->name];
+        if (isset($this->form) && $this->form->is_submitted()){
+            $this->value = $_POST[$this->name] ?? null;
         }
     }
 
@@ -246,10 +245,12 @@ abstract class Field
      * sets error and returns false otherwise 
      */
     public function validate() {
-        if (!$this->optional && !isset($this->value) && empty(trim($this->value)) )
+        if (!$this->optional && (!isset($this->value) || empty(trim($this->value))) )
             $this->errors[] = sprintf('%s is required', $this->label);
         if (array_key_exists('maxlength', $this->attributes) && is_string($this->value) && strlen($this->value) > $this->attributes['maxlength'])
             $this->errors[] = sprintf('Must be under %d characters.', $this->attributes['maxlength']);
+        if (array_key_exists('minlength', $this->attributes) && is_string($this->value) && strlen($this->value) < $this->attributes['minlength'])
+            $this->errors[] = sprintf('Must be over %d characters.', $this->attributes['minlength']);
         else
             return true;
         return false;
@@ -298,7 +299,7 @@ class InputField extends Field
         if (isset($this->value) )
             $attributes['value'] = $this->value;
 
-        return sprintf("<input %s>\n", form_render_attributes($attributes));
+        return sprintf("<input %s>\n", _form_render_attributes($attributes));
     }
 }
 
@@ -317,10 +318,115 @@ class TextAreaField extends Field
         $value = isset($this->value) ? $this->value : '';
 
         return sprintf("<textarea %s>%s</textarea>\n",
-            form_render_attributes($attributes),
-            form_escape($value));
+            _form_render_attributes($attributes),
+            _form_escape($value));
     }
 }
+
+
+/**
+ * SelectField: An class for a HTML select field
+ */
+class SelectField extends Field
+{   
+    protected $options;
+
+    public function __construct($label, $options, $optional=false, array $attributes=[], $name='', $form=null) {
+        $this->options = $options;
+        parent::__construct($label, $optional, $attributes, $name, $form);
+    }
+
+    /** 
+     * Returns true if field has a value that is a valid option or if the field is optional,
+     * sets error and returns false otherwise 
+     */
+    public function validate() {
+        $selected_value = $this->value ?? '';
+        
+        if ($this->optional && $selected_value === '')
+            return true;
+
+        $enabled_options = array_filter($this->options, function($option) {
+            return !is_array($option) 
+                || (
+                    !empty($option[1]) 
+                    && !array_key_exists('disabled', $option[1]) 
+                    && !in_array('disabled', $option[1])
+                );
+        });
+
+        $valid_options = [];
+
+        foreach ($enabled_options as $key => $value) {
+            if (is_int($key))
+                $valid_options[] = $value;
+            else
+                $valid_options[] = $key;
+        }
+
+        if (in_array($selected_value, $valid_options))
+            return true;
+
+        if ($selected_value === '' )
+            $this->errors[] = sprintf('%s is required', $this->label);
+        else 
+            $this->errors[] = sprintf('Please select one of the available options');
+
+        return false;
+    }
+
+    /** Helper function to convert an option to its proper HTML representation */
+    private function render_option($value, $option) {
+        if (is_array($option) && !empty($option[1]))
+            $option_attributes = $option[1];
+        else
+            $option_attributes = [];
+
+        if (!is_int($value))
+            $option_attributes['value'] = $value;
+
+        if (isset($this->value)){
+            if (!is_int($value) && $this->value == $value)
+                $option_attributes[] = 'selected';
+            else if (is_int($value) && $this->value == $option)
+                $option_attributes[] = 'selected';
+            else if ($this->value != $value && in_array('selected', $option_attributes))
+                // this value is not selected, remove it.
+                $option_attributes = array_diff($option_attributes, ['selected']);
+        }
+
+        return sprintf("\t<option %s>%s</option>",
+                _form_render_attributes($option_attributes),
+                _form_escape(is_array($option) ? $option[0] : $option));
+    }
+
+    /** Returns HTML string of the field */
+    public function render(array $attributes=[]) {
+        $attributes = array_merge($this->attributes, $attributes);
+        $attributes['name'] = $this->name;
+        $attributes['id'] = $this->form->get_name() . '-' . $this->name;
+
+        $options_html = [];
+
+        foreach ($this->options as $value => $option)
+            $options_html[] = $this->render_option($value, $option);
+
+        return sprintf("<select %s>\n%s</select>\n",
+            _form_render_attributes($attributes),
+            implode("\n", $options_html));
+    }
+
+    /** Returns option for name */
+    public function get_option($name) {
+        return $this->options[$name];
+    }
+
+    /** Returns display value of the selected option */
+    public function get_selected_display() {
+        return $this->get_option($this->value)[0];
+    }
+}
+
 
 /**
  * CheckBoxField: An class for a HTML input field with type="checkbox"
@@ -353,100 +459,7 @@ class CheckBoxField extends Field
         if (!empty($this->value))
             $attributes[] = 'checked';
 
-        return sprintf("<input %s>", form_render_attributes($attributes));
-    }
-}
-
-
-/**
- * CheckBoxField: An class for a HTML select field
- */
-class SelectField extends Field
-{   
-    protected $options;
-
-    public function __construct($label, $options, $default=null, $optional=false, array $attributes=[], $name='', $form=null) {
-        $this->options = $options;
-        if (!empty($default))
-            $this->value = $default;
-        parent::__construct($label, $optional, $attributes, $name, $form);
-    }
-
-    /** 
-     * Returns true if field has a value that is a valid option or if the field is optional,
-     * sets error and returns false otherwise 
-     */
-    public function validate() {
-        $value = isset($this->value) ? $this->value : '';
-        
-        $has_mapped_options = count(array_filter(array_keys($this->options), function($value){
-            return !is_int($value);
-        }));
-
-        if ($this->optional && $value === '')
-            return true;
-        else if ($has_mapped_options && array_key_exists($value, $this->options))
-            return true;
-        else if ( !$has_mapped_options && in_array($value, $this->options))
-            return true;
-
-        if ($value === '' )
-            $this->errors[] = sprintf('%s is required', $this->label);
-        else 
-            $this->errors[] = sprintf('Please select one of the available options');
-
-        return false;
-    }
-
-    /** Helper function to convert an option to it's proper HTML representation */
-    private function render_option($value, $option) {
-        if (is_array($option) && !empty($option[1]))
-            $option_attributes = $option[1];
-        else
-            $option_attributes = [];
-
-        if (!is_int($value))
-            $option_attributes['value'] = $value;
-
-        if (isset($this->value)){
-            if (!is_int($value) && $this->value == $value)
-                $option_attributes[] = 'selected';
-            else if (is_int($value) && $this->value == $option)
-                $option_attributes[] = 'selected';
-            else if ($this->value != $value && in_array('selected', $option_attributes))
-                // this value is not selected, remove it.
-                $option_attributes = array_diff($option_attributes, ['selected']);
-        }
-
-        return sprintf("\t<option %s>%s</option>",
-                form_render_attributes($option_attributes),
-                form_escape(is_array($option) ? $option[0] : $option));
-    }
-
-    /** Returns HTML string of the field */
-    public function render(array $attributes=[]) {
-        $attributes = array_merge($this->attributes, $attributes);
-        $attributes['name'] = $this->name;
-        $attributes['id'] = $this->form->get_name() . '-' . $this->name;
-
-        $options_html = [];
-
-        foreach ($this->options as $value => $option)
-            $options_html[] = $this->render_option($value, $option);
-
-        return sprintf("<select %s>\n%s</select>\n",
-            form_render_attributes($attributes),
-            implode("\n", $options_html));
-    }
-
-    /** Returns option for name */
-    public function get_option($name) {
-        return $this->options[$name];
-    }
-
-    /** Returns display value of the selected option */
-    public function get_selected_display() {
-        return $this->get_option($this->value)[0];
+        return sprintf("<input %s>", _form_render_attributes($attributes));
     }
 }
 

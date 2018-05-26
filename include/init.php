@@ -2,6 +2,7 @@
 require_once 'include/config.php';
 require_once 'include/utils.php';
 require_once 'include/sessions.php';
+require_once 'include/form.php';
 require_once 'include/TemplateView.class.php';
 require_once 'include/FormView.class.php';
 require_once 'include/ModelView.class.php';

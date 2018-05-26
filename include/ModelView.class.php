@@ -4,10 +4,10 @@ require_once 'include/FormView.class.php';
 
 
 /**
- * ModelView: An abstract class to manage CRUD(L) actions for a Model object.
+ * ModelView: A class to manage CRUD(L) actions for a Model object.
  * Separates reading a single object and listing multiple objects for clarity.
  */
-abstract class ModelView extends FormView
+class ModelView extends FormView
 {
     // The names of the available views (override to limit actions)
     protected $views = ['create', 'read', 'update', 'delete', 'list'];
@@ -15,14 +15,16 @@ abstract class ModelView extends FormView
     // The default view to run if $_GET['view'] is not provided
     protected $default_view = 'list';
 
-    // The base name of the template to use (defaults to 'templates/<page_id>')
-    protected $template_base_name;
+    // The Model object of this view.
+    protected $model;
 
     protected $_view;
 
-    public function __construct($title, $page_id='', $model=null) {
+
+    public function __construct($page_id, $title='', $model=null, $form=null) {
         $this->model = $model;
-        parent::__construct($title, $page_id);
+        $this->form = $form;
+        parent::__construct($page_id, $title);
 
         if (!isset($_GET['view']))
             $this->_view = $this->default_view;
@@ -31,7 +33,7 @@ abstract class ModelView extends FormView
     }
 
     /** Runs the correct function based on the $_GET['view'] parameter */
-    public function run_page() {
+    protected function run_page() {
         if (!in_array($this->_view, $this->views))
             throw new HttpException(404, 'View not found!');
             
@@ -97,7 +99,7 @@ abstract class ModelView extends FormView
     /** Returns the Model object to use for the view */
     protected function get_model() {
         if (!isset($this->model))
-            die('Please define the model property or override the get_model method!');
+            throw new RuntimeException('Please define the model property or override the get_model method!');
         return $this->model;
     }
 
@@ -117,13 +119,6 @@ abstract class ModelView extends FormView
             throw new HttpException(404, 'No object found for id');
 
         return $object;
-    }
-
-    /** Returns the Form object to use for create and update */
-    protected function get_form() {
-        if (!isset($this->form))
-            die('Please define the form property or override the get_form method!');
-        return $this->form;
     }
 
     /** Returns the url to redirect to after (successful) create, update or delete */

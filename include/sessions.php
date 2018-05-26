@@ -17,7 +17,7 @@ if (!defined('COVER_LOGOUT_URL'))
 
 
 /** Reverse of php's parse_url */
-function http_build_url($parts) { 
+function _http_build_url($parts) { 
     return implode("", array(
         isset($parts['scheme']) ? $parts['scheme'] . '://' : '',
         isset($parts['user']) ? $parts['user'] : '',
@@ -33,7 +33,7 @@ function http_build_url($parts) {
 
 
 /** Inject arguments into http url */
-function http_inject_url($url, array $data) {
+function _http_inject_url($url, array $data) {
     // Parse the url
     $url_parts = parse_url($url);
 
@@ -48,12 +48,12 @@ function http_inject_url($url, array $data) {
 
     // Rebuild the url
     $url_parts['query'] = http_build_query($url_query);
-    return http_build_url($url_parts);
+    return _http_build_url($url_parts);
 }
 
 
 /** Perform a signed http request */
-function http_signed_request($app, $secret, $url, array $post = null, $timeout=30) {
+function _http_signed_request($app, $secret, $url, array $post = null, $timeout=30) {
     $body = $post !== null ? http_build_query($post) : '';
 
     $checksum = sha1($body . $secret);
@@ -86,11 +86,11 @@ function http_signed_request($app, $secret, $url, array $post = null, $timeout=3
 
 
 /** Get JSON via a signed http request*/
-function http_get_json($url, array $data = null) {
+function _http_get_json($url, array $data = null) {
     if ($data !== null)
-        $url = http_inject_url($url, $data);
+        $url = _http_inject_url($url, $data);
 
-    $response = http_signed_request(COVER_APP, COVER_SECRET, $url);
+    $response = _http_signed_request(COVER_APP, COVER_SECRET, $url);
 
     if (!$response)
         throw new Exception('No response');
@@ -124,7 +124,7 @@ function get_cover_session() {
         'session_id' => $session_id
         );
 
-    $response = http_get_json(COVER_API_URL, $data);
+    $response = _http_get_json(COVER_API_URL, $data);
 
     return $session = !empty($response->result)
         ? $response->result
@@ -139,21 +139,21 @@ function cover_session_logged_in() {
 
 
 /** Create url to Cover Session management with return field */
-function cover_session_url($url, $next_url=null, $next_field='referrer') {
+function _cover_session_url($url, $next_url=null, $next_field='referrer') {
     if ($next_url === null)
         $next_url = SERVER_NAME.$_SERVER['REQUEST_URI'];
-    return http_inject_url($url, array($next_field => $next_url));
+    return _http_inject_url($url, array($next_field => $next_url));
 }
 
 /** Create url to Cover Login with return field */
 function cover_login_url($next_url=null) {
-    return cover_session_url(COVER_LOGIN_URL, $next_url);
+    return _cover_session_url(COVER_LOGIN_URL, $next_url);
 }
 
 
 /** Create url to Cover Logout with return field */
 function cover_logout_url($next_url=null) {
-    return cover_session_url(COVER_LOGOUT_URL, $next_url);
+    return _cover_session_url(COVER_LOGOUT_URL, $next_url);
 }
 
 
@@ -180,11 +180,11 @@ function cover_session_in_committee($committee) {
 
 
 /** Get JSON from Cover API with session id */
-function cover_get_json($method, array $data = array(), $use_session = true) {
+function cover_get_json($method, array $data=array(), $use_session=true) {
     if ($use_session && cover_session_logged_in() && !isset($data['session_id']))
         $data['session_id'] = $_COOKIE[COVER_COOKIE_NAME];
 
     $data['method'] = $method;
 
-    return http_get_json(COVER_API_URL, $data);
+    return _http_get_json(COVER_API_URL, $data);
 }

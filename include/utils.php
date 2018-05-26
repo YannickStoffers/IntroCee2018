@@ -124,28 +124,15 @@ class Template
 
     /** Escape and format plain text */
     static public function format_plain_text($text) {
-        $plain_paragraphs = new ArrayIterator(preg_split("/\r?\n\r?\n/", $text));
+        $plain_paragraphs = preg_split("/\r?\n\r?\n/", $text);
 
-        $formatted_paragraphs = iterator_map($plain_paragraphs,
+        $formatted_paragraphs = array_map(
             function($plain_paragraph) {
-                return sprintf('<p>%s</p>', nl2br(html(trim($plain_paragraph))));
-            });
+                return sprintf('<p>%s</p>', nl2br(self::html(trim($plain_paragraph))));
+            }, 
+            $plain_paragraphs
+        );
 
-        return implode("\n", iterator_to_array($formatted_paragraphs));
-    }
-
-    /** Escape and format plain code */
-    static public function format_code($code, $line_no_offset = null) {
-        static $line_no = 1;
-
-        if ($line_no_offset !== null)
-            $line_no = $line_no_offset;
-
-        $wrapped_lines = array();
-
-        foreach (explode("\n", $code) as $line)
-            $wrapped_lines[] = sprintf('<pre data-lineno="%d">%s</pre>',
-                $line_no++, html($line));
-        return implode("\n", $wrapped_lines);
+        return implode("\n", $formatted_paragraphs);
     }
 }
