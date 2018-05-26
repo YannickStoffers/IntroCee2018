@@ -33,4 +33,29 @@ class SignupForm extends Bootstrap3Form
 
         return parent::__construct($name, $fields);
     }
+
+    /** Implement custom validation */
+    public function validate() {
+        $result = parent::validate();
+
+        // Validate if Student number is set for first years
+        if ($this->get_value('type') === 'First-year') {
+            $snum = $this->get_value('student_number');
+            if (!isset($snum) || empty(trim($snum))){
+                $this->get_field('student_number')->errors[] = 'Student number is required';
+                $result = false &&  $result;
+            }
+        }
+
+        // Validate if BIC is set for non-Dutch IBANs.
+        if (substr(strtoupper($this->get_value('iban')), 0, 2) !== 'NL') {
+            $bic = $this->get_value('bic');
+            if (!isset($bic) || empty(trim($bic))){
+                $this->get_field('bic')->errors[] = 'BIC is required for non-Dutch bank accounts';
+                $result = false &&  $result;
+            }
+        }
+
+        return $result;
+    }
 }
