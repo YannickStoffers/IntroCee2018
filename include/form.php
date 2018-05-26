@@ -194,7 +194,7 @@ class Form
      */
     public function populate_field($field_name, $values) {
         if (!$this->is_submitted())
-            $this->set_values($field_name, $values);
+            $this->set_value($field_name, $values);
     }
 
     /** 
@@ -247,9 +247,9 @@ abstract class Field
     public function validate() {
         if (!$this->optional && (!isset($this->value) || empty(trim($this->value))) )
             $this->errors[] = sprintf('%s is required', $this->label);
-        if (array_key_exists('maxlength', $this->attributes) && is_string($this->value) && strlen($this->value) > $this->attributes['maxlength'])
+        elseif (array_key_exists('maxlength', $this->attributes) && is_string($this->value) && strlen($this->value) > $this->attributes['maxlength'])
             $this->errors[] = sprintf('Must be under %d characters.', $this->attributes['maxlength']);
-        if (array_key_exists('minlength', $this->attributes) && is_string($this->value) && strlen($this->value) < $this->attributes['minlength'])
+        elseif (array_key_exists('minlength', $this->attributes) && is_string($this->value) && strlen($this->value) < $this->attributes['minlength'])
             $this->errors[] = sprintf('Must be over %d characters.', $this->attributes['minlength']);
         else
             return true;
@@ -564,6 +564,9 @@ class NumberField extends InputField
     public function validate() {
         if (!parent::validate())
             return false;
+
+        if (empty($this->value))
+            return true;
 
         if (!is_numeric($this->value))
             $this->errors[] = 'Please enter a numberic value';
