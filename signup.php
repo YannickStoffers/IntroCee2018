@@ -9,7 +9,7 @@ class SignupView extends FormView
     protected $template_base_name = 'templates/signup/signup';
 
     public function __construct(){
-        parent::__construct('Sign up', 'signup');
+        parent::__construct('signup', 'Sign up');
         $this->model = get_model('Registration');
     }
 
@@ -17,6 +17,10 @@ class SignupView extends FormView
     protected function get_form() {
         $form = new SignupForm('signup');
 
+        // Set default value for type
+        $form->populate_field('type', 'First-year');
+
+        // Prefill form with data from the website if user is logged in.
         if (cover_session_logged_in()){
             $member = get_cover_session();
             $form->populate_fields([
@@ -69,7 +73,7 @@ class SignupView extends FormView
         
         $this->model->create($data);
 
-        // Notify admins
+        // Send confirmation email
         $success = send_mail(
             ADMIN_EMAIL,
             filter_var($data['email'], FILTER_SANITIZE_EMAIL),
@@ -80,7 +84,7 @@ class SignupView extends FormView
 
         // Determine wether email has ben send succesfully
         if (!$success)
-            throw new Exception('Your registration has been stored in our database, but we failed to send you a confirmation email!');
+            throw new HttpException(500, 'Your registration has been stored in our database, but we failed to send you a confirmation email!');
     }
 }
 

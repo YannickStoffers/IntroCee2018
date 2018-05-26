@@ -26,6 +26,7 @@ class SignupAdminView extends ModelView
     /** Create and returns the form to use for create and update */
     protected function get_form() {
         $form = new SignupForm('registration', false);
+        // Signup form is slightly optimized for non-admin use
         $form->add_field('status',  new SelectField('Status', $this->get_model()::$status_options));
         $form->delete_field('mentor');
         return $form;
@@ -43,5 +44,5 @@ class SignupAdminView extends ModelView
 }
 
 // Create and run subdomain view
-$view = new SignupAdminView('Registrations', 'signup_admin', get_model('Registration'));
+$view = new SignupAdminView('signup_admin', 'Registrations', get_model('Registration'));
 $view->run();
