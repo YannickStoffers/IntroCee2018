@@ -1,0 +1,148 @@
+<?php $this->extends('../layout.phtml') ?>
+
+<?php $this->begin('content') ?>
+<div class="container-fluid">
+    <header class="page-header">
+        <h1>Admin</h1>
+        <!-- <a class="btn btn-primary" href="/signup_admin.php?view=create">Add</a> -->
+    </header>
+
+    <h2>Statistics</h2>
+    <div class="row">
+        <div class="col-xs-12 col-md-8 col-lg-4">
+            <table class="table table-hover ">        
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Registered</th>
+                        <th>Cancelled</th>
+                        <th>Waiting list</th>
+                        <th>Registered vegetarians</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach (get_model('Registration')::$type_options as $type): ?>
+                        <tr>
+                            <td><?= $type ?></td>
+                            <td>
+                                <?= count( array_filter($objects, function ($p) use ($type) {
+                                    return $p['type'] === $type && $p['status'] === 'registered';
+                                }) ) ?>
+                            </td>
+                            <td>
+                                <?= count( array_filter($objects, function ($p) use ($type) {
+                                    return $p['type'] === $type && $p['status'] === 'cancelled';
+                                }) ) ?>
+                            </td>
+                            <td>
+                                <?= count( array_filter($objects, function ($p)  use ($type) {
+                                    return $p['type'] === $type && $p['status'] === 'waiting_list';
+                                }) ) ?>
+                            </td>
+                            <td>
+                                <?= count( array_filter($objects, function ($p)  use ($type) {
+                                    return $p['type'] === $type && $p['status'] === 'registered' && $p['vegetarian'] == 1;
+                                }) ) ?>
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Total</th>
+                        <th>
+                            <?= count( array_filter($objects, function ($p) { return $p['status'] === 'registered'; }) ) ?>
+                        </th>
+                        <th>
+                            <?= count( array_filter($objects, function ($p) { return $p['status'] === 'cancelled'; }) ) ?>
+                        </th>
+                        <th>
+                            <?= count( array_filter($objects, function ($p) { return $p['status'] === 'waiting_list'; }) ) ?>
+                        </th>
+                        <th>
+                            <?= count( array_filter($objects, function ($p) { 
+                                return $p['status'] === 'registered' && $p['vegetarian'] == 1; 
+                            }) ) ?>
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <h2>Registrations</h2>
+    <div class="table-responsive"> 
+        <table class="table table-hover table-registrations">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Surname</th>
+                    <th>Student number</th>
+                    <th>Birthday</th>
+                    <th>Address</th>
+                    <th>Postal</th>
+                    <th>City</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Emergency</th>
+                    <th>IBAN</th>
+                    <th>BIC</th>
+                    <th>Study</th>
+                    <th>Year</th>
+                    <th>Remarks</th>
+                    <th>Vegetarian</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($objects as $participant): ?>
+                    <tr>
+                        <td><?= $this->html($participant['type']) ?></td>
+                        <td><?= $this->html($participant['first_name']) ?></td>
+                        <td><?= $this->html($participant['surname']) ?></td>
+                        <td><?= $this->html($participant['student_number']) ?></td>
+                        <td><?= $this->html($participant['birthday']) ?></td>
+                        <td><?= $this->html($participant['address']) ?></td>
+                        <td><?= $this->html($participant['postal_code']) ?></td>
+                        <td><?= $this->html($participant['city']) ?></td>
+                        <td><?= $this->html($participant['email']) ?></td>
+                        <td><?= $this->html($participant['phone']) ?></td>
+                        <td><?= $this->html($participant['emergency_phone']) ?></td>
+                        <td><?= $this->html($participant['iban']) ?></td>
+                        <td><?= $this->html($participant['bic']) ?></td>
+                        <td><?= $this->html($participant['study']) ?></td>
+                        <td><?= $this->html($participant['study_year']) ?></td>
+                        <td class="truncate"><?= $this->html($participant['remarks']) ?></td>
+                        <td>
+                            <?php if ($participant['vegetarian'] == 1): ?>
+                                <span class="label label-default">Vegetarian</span>
+                            <?php endif ?>
+                        </td>
+                        <td>
+                            <?php if ($participant['status'] === 'registered'): ?>
+                                <span class="label label-success">Registered</span>
+                            <?php elseif ($participant['status'] === 'cancelled'): ?>
+                                <span class="label label-danger">Cancelled</span>
+                            <?php elseif ($participant['status'] === 'waiting_list'): ?>
+                                <span class="label label-warning">Waiting list</span>
+                            <?php endif ?>
+                        </td>
+                        <td class="text-right">
+                            <ul class="list-inline">
+                                <li>
+                                    <a href="/signup_admin.php?view=update&id=<?= $participant['id'] ?>">edit</a>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                <?php endforeach ?>
+                <?php if (!$objects): ?>
+                    <tr><td colspan="18" class="text-muted text-center">Nobody has registered yet :(</td></tr>
+                <?php endif ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php $this->end() ?>

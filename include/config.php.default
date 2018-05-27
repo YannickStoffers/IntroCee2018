@@ -1,0 +1,11 @@
+<?
+define('DB_DSN', 'mysql:host=localhost;dbname=introcee');
+define('DB_USER', 'introcee');
+define('DB_PASSWORD', '');
+
+define('ADMIN_COMMITTEE', 'introcee');
+define('ADMIN_EMAIL', 'IntroCee Cover <introcee@svcover.nl>');
+
+define('SERVER_NAME', 'https://inctrocee.svcover.nl');
+define('COVER_APP', 'IntroCee');
+define('COVER_SECRET', '');
