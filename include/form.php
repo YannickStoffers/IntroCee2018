@@ -247,10 +247,10 @@ abstract class Field
     public function validate() {
         if (!$this->optional && (!isset($this->value) || empty(trim($this->value))) )
             $this->errors[] = sprintf('%s is required', $this->label);
-        elseif (array_key_exists('maxlength', $this->attributes) && is_string($this->value) && strlen($this->value) > $this->attributes['maxlength'])
+        elseif (array_key_exists('maxlength', $this->attributes) && is_string($this->value) && mb_strlen($this->value) > $this->attributes['maxlength'])
             $this->errors[] = sprintf('Must be under %d characters.', $this->attributes['maxlength']);
-        elseif (array_key_exists('minlength', $this->attributes) && is_string($this->value) && strlen($this->value) < $this->attributes['minlength'])
-            $this->errors[] = sprintf('Must be over %d characters.', $this->attributes['minlength']);
+        elseif (array_key_exists('minlength', $this->attributes) && is_string($this->value) && mb_strlen($this->value) < $this->attributes['minlength'])
+            $this->errors[] = sprintf('Must be at least %d characters.', $this->attributes['minlength']);
         else
             return true;
         return false;
