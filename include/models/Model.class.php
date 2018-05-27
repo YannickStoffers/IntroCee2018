@@ -21,7 +21,7 @@ abstract class Model
 
         $statement->execute($input_parameters);
 
-        if ( strncasecmp($query, 'select', 6) === 0 )
+        if ( strncasecmp(trim($query), 'select', 6) === 0 )
             // can only do fetchAll for non-select queries
             return $statement->fetchAll(PDO::FETCH_ASSOC);
 
@@ -113,7 +113,7 @@ abstract class Model
     /**
      * Select data from table
      */
-    public function get(array $conditions=[], $get_first=false) {
+    public function get(array $conditions=[], array $order=[], $get_first=false) {
         if (!$this->table)
             throw new RuntimeException(get_class($this) . '::$table is not set');
 
@@ -123,6 +123,13 @@ abstract class Model
 
         if (!empty($conditions))
             $query .= ' ' . $this->format_conditions($conditions, $params);
+
+        if (!empty($order)) {
+            $atoms = [];
+            foreach ($order as $field)
+                $atoms[] = $field[0] === '-' ? sprintf('%s DESC', substr($field, 1)) : $field;
+            $query .= ' ORDER BY ' . implode(',', $atoms);
+        }
 
         if ($get_first)
             return $this->query_first($query, $params);
@@ -134,7 +141,7 @@ abstract class Model
      * Select first entry from table matched by ID
      */
     public function get_by_id($id, $field='id') {
-        return $this->get([$field => $id], true);
+        return $this->get([$field => $id], [], true);
     }
 
 
