@@ -35,7 +35,7 @@ abstract class FormView extends TemplateView
     /** Renders an invalid form */
     protected function form_invalid($form) {
         // the get_template call is a bit verbose to make subclassing this easier.
-        return $this->render_template($this->get_template('form'), ['form' => $form->render()]);
+        return $this->render_template($this->get_template('form'), ['form' => $form]);
     }
 
     /** Processes the data of a valid form */

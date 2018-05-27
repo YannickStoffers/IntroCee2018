@@ -53,11 +53,6 @@ class SignupView extends FormView
         }
         return $this->render_template($this->get_template('form_processed'), $context);
     }
-
-    /** Renders an invalid form */
-    protected function form_invalid($form) { 
-        return $this->render_template($this->get_template('form'), ['form' => $form]);
-    }
     
     /** Processes the data of a valid form */
     protected function process_form_data($data) {        
