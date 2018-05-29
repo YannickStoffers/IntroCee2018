@@ -7,6 +7,8 @@ class SignupForm extends Bootstrap3Form
 {
     public function __construct($name, $strict=true){
         $model = get_model('Registration');
+        $study_options = [['Select your study', ['selected', 'disabled']]];
+        $study_options = array_merge($study_options, $model::$study_options);
 
         $fields = [
             'type'            => new SelectField   ('Type', $model::$type_options),
@@ -22,7 +24,7 @@ class SignupForm extends Bootstrap3Form
             'emergency_phone' => new StringField   ('Emergency contact',                      !$strict, ['maxlength' => 100]),
             'iban'            => new StringField   ('IBAN',                                   !$strict, ['maxlength' => 34]),
             'bic'             => new StringField   ('BIC (only for non-Dutch bank accounts)', true,     ['maxlength' => 11]),
-            'study'           => new SelectField   ('Field of study', $model::$study_options, !$strict),
+            'study'           => new SelectField   ('Field of study', $study_options, !$strict),
             'study_year'      => new NumberField   ('How many years have you been studying?', true,     ['min' => 1, 'max' => 9]),
             'remarks'         => new TextAreaField ('Comments',                               true,     ['maxlength' => 1024]),
             'mentor'          => new CheckBoxField ('I\'m a mentor',                          true),
@@ -48,7 +50,7 @@ class SignupForm extends Bootstrap3Form
         }
 
         // Validate if BIC is set for non-Dutch IBANs.
-        if (substr(strtoupper($this->get_value('iban')), 0, 2) !== 'NL') {
+        if (substr(strtoupper(trim($this->get_value('iban'))), 0, 2) !== 'NL') {
             $bic = $this->get_value('bic');
             if (!isset($bic) || empty(trim($bic))){
                 $this->get_field('bic')->errors[] = 'BIC is required for non-Dutch bank accounts';
