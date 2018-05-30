@@ -15,7 +15,7 @@ class SignupView extends FormView
 
     /** Creates and returns the request form */
     protected function get_form() {
-        $form = new SignupForm('signup');
+        $form = new SignupFormBarbeucue('signup');
 
         // Set default value for type
         $form->populate_field('type', 'First-year');
