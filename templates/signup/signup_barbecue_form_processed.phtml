@@ -1,0 +1,20 @@
+<?php $this->extends('../layout.phtml') ?>
+
+<?php $this->begin('content') ?>
+<div class="container container-narrow">
+    <?php if ($status === 'success'): ?>
+        <h1>Success!</h1>
+        <p class="happy-message">
+            We have received your registration. Please check your inbox for a confirmation email.
+        </p>
+    <?php else: ?>
+        <h1>Oh dear! Something went wrong :(</h1>
+        <p>
+            <?= $this->html($message) ?>
+        </p>
+        <p>
+            Please contact the <a href="mailto:introcee@svcover.nl">IntroCee</a>!
+        </p>
+    <?php endif ?>
+</div>
+<?php $this->end() ?>
