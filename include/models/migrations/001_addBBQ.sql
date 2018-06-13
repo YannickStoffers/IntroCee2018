@@ -15,6 +15,7 @@ CREATE TABLE `barbecue` (
   `iban` varchar(34), -- official max length of an iban
   `bic` varchar(11), -- official max length of a bic
   `study` enum('Artificial Intelligence','Computing Science','Other') NOT NULL,
+  `remarks` varchar(1024),
   `vegetarian` tinyint(1) NOT NULL DEFAULT '0',
   `accept_costs` tinyint(1) NOT NULL DEFAULT '0',
   `status` enum('registered','cancelled') NOT NULL DEFAULT 'registered',
