@@ -8,6 +8,11 @@
             <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             Hi <?= get_cover_session()->voornaam ?>! We prefilled the form with some your information from the Cover website.
         </div>
+    <?php else: ?>
+        <div class="alert alert-info alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            Hi there! Did you know, that if you log in on the Cover website (membership required) we can pretty much fill in most of this information already? You can log in <a href='//www.svcover.nl/sessions.php'>here</a>, or sign up <a href='//www.svcover.nl/lidworden.php'>here</a>.
+        </div>
     <?php endif ?>
     <ul class="nav nav-pills nav-justified" role="tablist">
         <li role="presentation" <?php if ($form->get_value('type') == 'First-year'): ?>class="active"<?php endif ?>>
@@ -22,36 +27,20 @@
             <form method="POST">
                 <input type="hidden" name="type" value="First-year">
                 <h3>Personal</h3>
-                <?= $form->render_field('student_number', ['placeholder' => 's1234567']) ?>
                 <?= $form->render_field('first_name', ['placeholder' => 'Jan']) ?>
                 <?= $form->render_field('surname', ['placeholder' => 'de Joker']) ?>
                 <?= $form->render_field('birthday', ['placeholder' => '20-09-1993']) ?>
                 <h3>Contact</h3>
                 <?= $form->render_field('address', ['placeholder' => 'Nijenborgh 9']) ?>
-                <?= $form->render_field('postal_code', ['placeholder' => '9747 AG']) ?>
                 <?= $form->render_field('city', ['placeholder' => 'Groningen']) ?>
                 <?= $form->render_field('email', ['placeholder' => 'introcee@svcover.nl']) ?>
-                <?= $form->render_field('phone', ['placeholder' => '+316 1234 5678']) ?>
-                <?= $form->render_field('emergency_phone', ['placeholder' => '+3150 363 6898']) ?>
                 <h3>Financial</h3>
                 <?= $form->render_field('iban', ['placeholder' => 'NL37BANK0123456789']) ?>
                 <?= $form->render_field('bic', ['placeholder' => 'BANKNL2G']) ?>
                 <h3>Other</h3>
                 <?= $form->render_field('study') ?>
-                <?= $form->render_field('remarks', ['placeholder' => 'Comments (allergies, medication, remarks)', 'rows'=>3]) ?>
+                <?= $form->render_field('remarks', ['placeholder' => 'Comments (allergies, remarks)', 'rows'=>3]) ?>
                 <?= $form->render_field('vegetarian') ?>
-                <div class="checkbox <?= empty($form->get_field('accept_terms')->errors) ? '' : 'has-error' ?>">
-                    <label>
-                        <?= $form->get_field('accept_terms')->render() ?>
-                        I have read and accepted the terms and conditions
-                    </label>
-                </div>
-                <div class="checkbox <?= empty($form->get_field('accept_costs')->errors) ? '' : 'has-error' ?>">
-                    <label>
-                        <?= $form->get_field('accept_costs')->render() ?>
-                        I have accepted the costs of &euro; 45,-
-                    </label>
-                </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
@@ -59,39 +48,22 @@
         </div>
         <div role="tabpanel" class="tab-pane <?=($form->get_value('type') != 'First-year') ? 'active' : '' ?>" id="senior">
             <form method="POST">
-                <input type="hidden" name="type" value="Senior">
+                <input type="hidden" name="type" value="First-year">
                 <h3>Personal</h3>
                 <?= $form->render_field('first_name', ['placeholder' => 'Jan']) ?>
                 <?= $form->render_field('surname', ['placeholder' => 'de Joker']) ?>
                 <?= $form->render_field('birthday', ['placeholder' => '20-09-1993']) ?>
                 <h3>Contact</h3>
                 <?= $form->render_field('address', ['placeholder' => 'Nijenborgh 9']) ?>
-                <?= $form->render_field('postal_code', ['placeholder' => '9747 AG']) ?>
                 <?= $form->render_field('city', ['placeholder' => 'Groningen']) ?>
                 <?= $form->render_field('email', ['placeholder' => 'introcee@svcover.nl']) ?>
-                <?= $form->render_field('phone', ['placeholder' => '+3150 363 6898']) ?>
-                <?= $form->render_field('emergency_phone', ['placeholder' => '+3150 363 6898']) ?>
                 <h3>Financial</h3>
                 <?= $form->render_field('iban', ['placeholder' => 'NL37BANK0123456789']) ?>
                 <?= $form->render_field('bic', ['placeholder' => 'BANKNL2G']) ?>
                 <h3>Other</h3>
                 <?= $form->render_field('study') ?>
-                <?= $form->render_field('study_year') ?>
-                <?= $form->render_field('remarks', ['placeholder' => 'Comments (allergies, medication, remarks)', 'rows'=>3]) ?>
-                <?= $form->render_field('mentor') ?>
+                <?= $form->render_field('remarks', ['placeholder' => 'Comments (allergies or remarks)', 'rows'=>3]) ?>
                 <?= $form->render_field('vegetarian') ?>
-                <div class="checkbox <?= empty($form->get_field('accept_terms')->errors) ? '' : 'has-error' ?>">
-                    <label>
-                        <?= $form->get_field('accept_terms')->render() ?>
-                        I have read and accepted the terms and conditions
-                    </label>
-                </div>
-                <div class="checkbox <?= empty($form->get_field('accept_costs')->errors) ? '' : 'has-error' ?>">
-                    <label>
-                        <?= $form->get_field('accept_costs')->render() ?>
-                        I have accepted the costs of &euro; 55,-
-                    </label>
-                </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
