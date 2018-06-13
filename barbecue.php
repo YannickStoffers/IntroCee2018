@@ -55,7 +55,6 @@ class BarbecueView extends FormView
     protected function process_form_data($data) {        
         // Convert booleans to tinyints
         $data['vegetarian'] = empty($data['vegetarian']) ? 0 : 1;
-        $data['accept_terms'] = empty($data['accept_terms']) ? 0 : 1;
         $data['accept_costs'] = empty($data['accept_costs']) ? 0 : 1;
         
         $this->model->create($data);
