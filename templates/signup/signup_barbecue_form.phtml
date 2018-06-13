@@ -3,6 +3,7 @@
 <?php $this->begin('content') ?>
 <div class="container container-narrow">
     <h1>Sign up</h1>
+    <h2>Barbecue on the introduction day</h2>
     <?php if (cover_session_logged_in()): ?>
         <div class="alert alert-info alert-dismissible" role="alert">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -41,6 +42,12 @@
                 <?= $form->render_field('study') ?>
                 <?= $form->render_field('remarks', ['placeholder' => 'Comments (allergies, remarks)', 'rows'=>3]) ?>
                 <?= $form->render_field('vegetarian') ?>
+                <div class="checkbox <?= empty($form->get_field('accept_costs')->errors) ? '' : 'has-error' ?>">
+                    <label>
+                        <?= $form->get_field('accept_costs')->render() ?>
+                        I have accepted the costs for whatever I drink at the introduction day barbecue
+                    </label>
+                </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
@@ -64,6 +71,12 @@
                 <?= $form->render_field('study') ?>
                 <?= $form->render_field('remarks', ['placeholder' => 'Comments (allergies or remarks)', 'rows'=>3]) ?>
                 <?= $form->render_field('vegetarian') ?>
+                <div class="checkbox <?= empty($form->get_field('accept_costs')->errors) ? '' : 'has-error' ?>">
+                    <label>
+                        <?= $form->get_field('accept_costs')->render() ?>
+                        I have accepted the costs for whatever I drink at the introduction day barbecue + &euro; 5,-
+                    </label>
+                </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </div>

@@ -16,6 +16,7 @@ CREATE TABLE `barbecue` (
   `bic` varchar(11), -- official max length of a bic
   `study` enum('Artificial Intelligence','Computing Science','Other') NOT NULL,
   `vegetarian` tinyint(1) NOT NULL DEFAULT '0',
+  `accept_costs` tinyint(1) NOT NULL DEFAULT '0',
   `status` enum('registered','cancelled') NOT NULL DEFAULT 'registered',
   PRIMARY KEY (`id`),
   UNIQUE (`email`)

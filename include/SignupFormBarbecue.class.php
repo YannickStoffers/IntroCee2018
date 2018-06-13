@@ -23,6 +23,7 @@ class SignupFormBarbecue extends Bootstrap3Form
             'study'           => new SelectField   ('Field of study', $study_options, !$strict),
             'remarks'         => new TextAreaField ('Comments',                               true,     ['maxlength' => 1024]),
             'vegetarian'      => new CheckBoxField ('I\'m a vegetarian ',                     true),
+            'accept_costs'    => new CheckBoxField ('I accept the costs', !$strict),
         ];
 
         return parent::__construct($name, $fields);

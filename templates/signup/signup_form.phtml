@@ -3,10 +3,16 @@
 <?php $this->begin('content') ?>
 <div class="container container-narrow">
     <h1>Sign up</h1>
+    <h2>Introduction camp</h2>
     <?php if (cover_session_logged_in()): ?>
         <div class="alert alert-info alert-dismissible" role="alert">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             Hi <?= get_cover_session()->voornaam ?>! We prefilled the form with some your information from the Cover website.
+        </div>
+    <?php else: ?>
+        <div class="alert alert-info alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            Hi there! Did you know, that if you log in on the Cover website (membership required) we can pretty much fill in most of this information already? You can log in <a href='//www.svcover.nl/sessions.php'>here</a>, or sign up <a href='//www.svcover.nl/lidworden.php'>here</a>.
         </div>
     <?php endif ?>
     <ul class="nav nav-pills nav-justified" role="tablist">

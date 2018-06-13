@@ -33,11 +33,14 @@
                     <li <?php if ($page_id == 'grablist'): ?>class="active"<?php endif ?> >
                         <a href="grablist.php">Grab list</a>
                     </li>
-                    <li <?php if ($page_id == 'signup'): ?>class="active"<?php endif ?> >
-                        <a href="signup.php">Sign up</a>
-                    </li>
-                    <li <?php if ($page_id == 'barbecue'): ?>class="active"<?php endif ?> >
-                        <a href="barbecue.php">Barbecue</a>
+                    <li <?php if ($page_id == 'signup' or $page_id == 'barbecue'): ?>class="active dropdown"<?php else: ?>class="dropdown"<?php endif ?> >
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                            Sign Up
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="signup.php">Introduction Camp</a></li>
+                            <li><a href="barbecue.php">Barbecue</a></li>
+                        </ul>
                     </li>
                     <?php if(cover_session_logged_in() && cover_session_in_committee(ADMIN_COMMITTEE)): ?>
                         <li class="dropdown">
