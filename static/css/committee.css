@@ -11,6 +11,7 @@ body {
 	overflow: auto;
 	position: relative;
 	text-align: center;
+	font-size: medium;
 }
 
 #committee-text-right{
@@ -53,4 +54,13 @@ body {
     position: absolute;
 	top: 50%;
 	transform: translateY(-50%);
+}
+
+.committee-photo{
+	width: 100%;
+	height: auto;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	position: absolute;
 }
