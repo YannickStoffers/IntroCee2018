@@ -60,3 +60,7 @@ overflow: hidden;
     width: 100%;
     max-width: 0;
 }
+
+p {
+	text-align: justify;
+}
