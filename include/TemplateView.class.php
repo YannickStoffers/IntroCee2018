@@ -49,6 +49,7 @@ class TemplateView extends View
             $html_message = $e->getHtmlMessage();
             $status = $e->getStatus();
         } else {
+            sentry_report_exception($e);
             $html_message = null;
             $status = 500;
         }

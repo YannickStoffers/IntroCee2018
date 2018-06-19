@@ -6,11 +6,18 @@ require_once 'include/form.php';
 require_once 'include/TemplateView.class.php';
 require_once 'include/FormView.class.php';
 require_once 'include/ModelView.class.php';
+require_once 'include/sentry.php';
 
 require_once dirname(__FILE__) . '/../vendor/autoload.php';
 
+
+if (defined('SENTRY_URL'))
+    init_sentry();
+
+
 if (!defined('ADMIN_COMMITTEE'))
     define('ADMIN_COMMITTEE', 'webcie');
+
 
 /** Creates and caches PDO object for the database */
 function get_db() {

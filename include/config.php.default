@@ -11,3 +11,5 @@ define('COVER_APP', 'IntroCee');
 define('COVER_SECRET', '');
 
 define('NO_IBAN_STRING', 'NO_IBAN_AVAILABLE');
+
+define('SENTRY_URL', '');
