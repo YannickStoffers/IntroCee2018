@@ -7,6 +7,7 @@ require_once 'include/TemplateView.class.php';
 require_once 'include/FormView.class.php';
 require_once 'include/ModelView.class.php';
 
+require_once dirname(__FILE__) . '/../vendor/autoload.php';
 
 if (!defined('ADMIN_COMMITTEE'))
     define('ADMIN_COMMITTEE', 'webcie');
