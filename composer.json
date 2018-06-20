@@ -1,0 +1,6 @@
+{
+    "require": {
+        "ronanguilloux/isocodes": "^2.1",
+        "sentry/sentry": "^1.9"
+    }
+}

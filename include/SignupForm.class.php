@@ -45,17 +45,32 @@ class SignupForm extends Bootstrap3Form
             $snum = $this->get_value('student_number');
             if (!isset($snum) || empty(trim($snum))){
                 $this->get_field('student_number')->errors[] = 'Student number is required';
-                $result = false &&  $result;
+                $result = false && $result;
             }
         }
 
+        if (defined('NO_IBAN_STRING') && $this->get_value('iban') == NO_IBAN_STRING)
+            return $result;
+
+
+        if (!\IsoCodes\Iban::validate($this->get_value('iban'))) {
+            $this->get_field('iban')->errors[] = 'Please provide a valid IBAN';      
+            $result = false && $result;
+        }
+
+        $bic = $this->get_value('bic');
+
         // Validate if BIC is set for non-Dutch IBANs.
-        if (substr(strtoupper(trim($this->get_value('iban'))), 0, 2) !== 'NL') {
-            $bic = $this->get_value('bic');
+        if (substr(strtoupper($this->get_value('iban')), 0, 2) !== 'NL') {
             if (!isset($bic) || empty(trim($bic))){
                 $this->get_field('bic')->errors[] = 'BIC is required for non-Dutch bank accounts';
-                $result = false &&  $result;
+                $result = false && $result;
             }
+        }
+
+        if (isset($bic) && !empty(trim($bic)) && !\IsoCodes\SwiftBic::validate($bic)) {
+            $this->get_field('bic')->errors[] = 'Please provide a valid BIC';      
+            $result = false && $result;
         }
 
         return $result;
