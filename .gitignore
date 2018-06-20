@@ -2,3 +2,5 @@ include/config.php
 *.db
 
 vendor/
+
+*.phar
