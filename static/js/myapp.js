@@ -32,7 +32,10 @@ function changeImage()
             }
     	}
     	if (!set)
+    	{
 	        image.src = "/static/img/bier.gif";
+	        document.getElementById("highQualityButton").style.visibility = "visible";
+    	}
     }
     else
     {
