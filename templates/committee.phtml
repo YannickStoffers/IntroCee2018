@@ -8,7 +8,11 @@
 <div class="container container-wide">
     <header>
         <h1>Meet the crew!</h1>
-        <img alt= "" src="/static/img/committee.jpg" class="committee-photo" id="imgClickAndChange" onclick="changeImage()">
+        <div>
+            <img alt= "" src="/static/img/committee.jpg" class="committee-photo" id="imgClickAndChange" onclick="changeImage()">
+            <button type="button" class="astext" onclick="highQuality()" id="highQualityButton" style="visibility: hidden;">I want high quality!</button>
+            <button type="button" class="astext" onclick="lowQuality()" id="lowQualityButton" style="visibility: hidden;">I want a fast website!</button>
+        </div>
     </header>
     <div class="committee-member">
         <div class="committee-member-photo">

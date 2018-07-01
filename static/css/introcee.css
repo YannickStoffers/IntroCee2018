@@ -1,14 +1,14 @@
 /* Your custom CSS here */
 header.page-header {
-    margin-top: 2rem;
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+	margin-top: 2rem;
+	margin-bottom: 1rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
 
 header.page-header h1 {
-    margin-top: 0;
+	margin-top: 0;
 }
 
 .page-filling{
@@ -51,16 +51,26 @@ overflow: hidden;
 
 .table.table-registrations th,
 .table.table-registrations td {
-    white-space: nowrap;
+	white-space: nowrap;
 }
 
 .table.table-registrations td.truncate {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-    max-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	width: 100%;
+	max-width: 0;
 }
 
 p {
 	text-align: justify;
 }
+
+button.astext {
+	position: fixed;
+	right: 0;
+	bottom: 0;
+	background: none;
+	border:none;
+	cursor: pointer;
+}
+
