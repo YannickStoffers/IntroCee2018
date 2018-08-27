@@ -108,7 +108,15 @@
 						<td><?= $this->html($participant['first_name']) ?></td>
 						<td><?= $this->html($participant['surname']) ?></td>
 						<td><?= $this->html($participant['student_number']) ?></td>
-						<td><?= $this->html($participant['birthday']) ?></td>
+						<td>
+							<?php if (date_diff(date_create($participant['birthday']), date_create('now'))->y < 18): ?>
+								<span class="label label-warning">
+							<?php endif ?>
+							<?= $this->html($participant['birthday']) ?>
+							<?php if (date_diff(date_create($participant['birthday']), date_create('now'))->y < 18): ?>
+								</span>
+							<?php endif ?>
+						</td>
 						<td><?= $this->html($participant['address']) ?></td>
 						<td><?= $this->html($participant['postal_code']) ?></td>
 						<td><?= $this->html($participant['city']) ?></td>
