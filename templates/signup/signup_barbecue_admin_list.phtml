@@ -231,8 +231,8 @@
                 for (i = 1; i < rows.length; i++) {
                     row = rows[i].getElementsByTagName("TD");
                     csv += row[0].innerHTML.replace (/ *\<[^>]*\> */g, "").trim();
-                    csv += row[1].innerHTML.replace (/ *\<[^>]*\> */g, "").trim() + " " + row[2].innerHTML.replace (/ *\<[^>]*\> */g, "").trim();
-                    csv += row[3].innerHTML.replace (/ *\<[^>]*\> */g, "").trim().replace ("-", "/");
+                    csv += ";" + row[1].innerHTML.replace (/ *\<[^>]*\> */g, "").trim() + " " + row[2].innerHTML.replace (/ *\<[^>]*\> */g, "").trim();
+                    csv += ";" + row[3].innerHTML.replace (/ *\<[^>]*\> */g, "").trim().replace (/-/g, "/");
                     for (j = 4; j < row.length - 1; j++) {
                         csv += ";" + row[j].innerHTML.replace (/ *\<[^>]*\> */g, "").trim();
                     }
