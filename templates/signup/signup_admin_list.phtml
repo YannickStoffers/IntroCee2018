@@ -70,12 +70,15 @@
 		</div>
 	</div>
 
-	<h2>
-		Registrations
-		<button onclick="download()" style="border-width: 0; background: white;">
-			<img src="static/icons/download.png" style="height: auto; width: auto; max-height: 25px; max-width: 25px;">
-		</button>
-	</h2>
+	<h2>Registrations</h2>
+    <button onclick="download()" style="border-width: 0; background: white;">
+        <img src="static/icons/download.png" style="height: auto; width: auto; max-height: 25px; max-width: 25px;">
+        Export for financial administration.
+    </button>
+    <button onclick="exportForBar()" style="border-width: 0; background: white;">
+        <img src="static/icons/download.png" style="height: auto; width: auto; max-height: 25px; max-width: 25px;">
+        Export for B.A.R.
+    </button>
 	<div class="table-responsive"> 
 		<table class="table table-hover table-registrations" id="registrations">
 			<thead>
@@ -238,6 +241,37 @@
 				link.setAttribute('download', 'export.csv');
 				link.click();
 			}
+
+			function exportForBar() {
+                var table, rows, row, i, csv, date;
+
+                table = document.getElementById("registrations");
+                rows = table.getElementsByTagName("TR");
+
+                csv = "name;birthday;address;city;email;iban;bic\n";
+                for (i = 1; i < rows.length; i++) {
+                    row = rows[i].getElementsByTagName("TD");
+                    csv += row[1].innerHTML.replace (/ *\<[^>]*\> */g, "").trim().replace(/;/g, "") + " " + row[2].innerHTML.replace (/ *\<[^>]*\> */g, "").trim().replace(/;/g, "");
+                    date = row[4].innerHTML.replace (/ *\<[^>]*\> */g, "").trim().replace(/;/g, "").split ("-");
+                    csv += ";" + date[2] + "-" + date[1] + "-" + date[0];
+                    csv += ";" + row[5].innerHTML.replace (/ *\<[^>]*\> */g, "").trim().replace(/;/g, "");
+                    csv += ";" + row[7].innerHTML.replace (/ *\<[^>]*\> */g, "").trim().replace(/;/g, "");
+                    csv += ";" + row[8].innerHTML.replace (/ *\<[^>]*\> */g, "").trim().replace(/;/g, "");
+                    csv += ";" + row[11].innerHTML.replace (/ *\<[^>]*\> */g, "").trim().replace(/;/g, "");
+                    csv += ";" + row[12].innerHTML.replace (/ *\<[^>]*\> */g, "").trim().replace(/;/g, "");
+                    csv += "\n";
+                }
+
+                if (!csv.match(/^data:text\/csv/i)) {
+                    csv = 'data:text/csv;charset=utf-8,' + csv;
+                }
+                data = encodeURI(csv);
+
+                link = document.createElement('a');
+                link.setAttribute('href', data);
+                link.setAttribute('download', 'export.csv');
+                link.click();
+            }
 		</script>
 	</div>
 </div>
