@@ -61,12 +61,15 @@
         </div>
     </div>
 
-    <h2>
-        Registrations
-        <button onclick="download()" style="border-width: 0; background: white;">
-            <img src="static/icons/download.png" style="height: auto; width: auto; max-height: 25px; max-width: 25px;">
-        </button>
-    </h2>
+    <h2>Registrations</h2>
+    <button onclick="download()" style="border-width: 0; background: white;">
+        <img src="static/icons/download.png" style="height: auto; width: auto; max-height: 25px; max-width: 25px;">
+        Export for financial administration.
+    </button>
+    <button onclick="exportForBar()" style="border-width: 0; background: white;">
+        <img src="static/icons/download.png" style="height: auto; width: auto; max-height: 25px; max-width: 25px;">
+        Export for B.A.R.
+    </button>
     <div class="table-responsive"> 
         <table class="table table-hover table-registrations" id="registrations">
             <thead>
@@ -202,6 +205,35 @@
                     row = rows[i].getElementsByTagName("TD");
                     csv += row[0].innerHTML.replace (/ *\<[^>]*\> */g, "").trim();
                     for (j = 1; j < row.length - 1; j++) {
+                        csv += ";" + row[j].innerHTML.replace (/ *\<[^>]*\> */g, "").trim();
+                    }
+                    csv += "\n";
+                }
+
+                if (!csv.match(/^data:text\/csv/i)) {
+                    csv = 'data:text/csv;charset=utf-8,' + csv;
+                }
+                data = encodeURI(csv);
+
+                link = document.createElement('a');
+                link.setAttribute('href', data);
+                link.setAttribute('download', 'export.csv');
+                link.click();
+            }
+
+            function exportForBar() {
+                var table, rows, row, i, csv;
+
+                table = document.getElementById("registrations");
+                rows = table.getElementsByTagName("TR");
+
+                csv = "type;name;surname;birthday;address;city;email;iban;bic;study;remarks;vegetarian;status\n";
+                for (i = 1; i < rows.length; i++) {
+                    row = rows[i].getElementsByTagName("TD");
+                    csv += row[0].innerHTML.replace (/ *\<[^>]*\> */g, "").trim();
+                    csv += row[1].innerHTML.replace (/ *\<[^>]*\> */g, "").trim() + " " + row[2].innerHTML.replace (/ *\<[^>]*\> */g, "").trim();
+                    csv += row[3].innerHTML.replace (/ *\<[^>]*\> */g, "").trim().replace ("-", "/");
+                    for (j = 4; j < row.length - 1; j++) {
                         csv += ";" + row[j].innerHTML.replace (/ *\<[^>]*\> */g, "").trim();
                     }
                     csv += "\n";
