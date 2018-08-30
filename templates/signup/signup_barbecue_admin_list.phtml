@@ -222,7 +222,7 @@
             }
 
             function exportForBar() {
-                var table, rows, row, i, csv;
+                var table, rows, row, i, csv, date;
 
                 table = document.getElementById("registrations");
                 rows = table.getElementsByTagName("TR");
@@ -231,7 +231,8 @@
                 for (i = 1; i < rows.length; i++) {
                     row = rows[i].getElementsByTagName("TD");
                     csv += row[1].innerHTML.replace (/ *\<[^>]*\> */g, "").trim() + " " + row[2].innerHTML.replace (/ *\<[^>]*\> */g, "").trim();
-                    csv += ";" + row[3].innerHTML.replace (/ *\<[^>]*\> */g, "").trim().replace (/-/g, "/");
+                    date = row[3].innerHTML.replace (/ *\<[^>]*\> */g, "").trim().split ("-");
+                    csv += ";" + date[2] + "-" + date[1] + "-" + date[0];
                     for (j = 4; j < 9; j++) {
                         csv += ";" + row[j].innerHTML.replace (/ *\<[^>]*\> */g, "").trim();
                     }
