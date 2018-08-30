@@ -221,9 +221,9 @@
 				csv = "type;name;surname;student_number;birthday;address;postal;city;email;phone;emergency_phone;iban;bic;study;study_year;remarks;vegetarian;status\n";
 				for (i = 1; i < rows.length; i++) {
 					row = rows[i].getElementsByTagName("TD");
-					csv += row[0].innerHTML.replace (/ *\<[^>]*\> */g, "").trim();
+					csv += row[0].innerHTML.replace (/ *\<[^>]*\> */g, "").trim().replace(/;/g, "");
 					for (j = 1; j < row.length - 1; j++) {
-						csv += ";" + row[j].innerHTML.replace (/ *\<[^>]*\> */g, "").trim();
+						csv += ";" + row[j].innerHTML.replace (/ *\<[^>]*\> */g, "").trim().replace(/;/g, "");
 					}
 					csv += "\n";
 				}
