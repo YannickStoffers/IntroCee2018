@@ -74,7 +74,12 @@ class BarbecueView extends FormView
     }
 }
 
+$opened = true;
 
 // Create and run home view
 $view = new BarbecueView();
+if (!$opened) {
+    $view = new TemplateView ('signups_closed');
+}
+
 $view->run();
