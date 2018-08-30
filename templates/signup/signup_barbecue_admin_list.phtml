@@ -197,7 +197,7 @@
                 table = document.getElementById("registrations");
                 rows = table.getElementsByTagName("TR");
 
-                csv = "type,name,surname,student_number,birthday,address,postal,city,email,phone,emergency_phone,iban,bic,study,study_year,remarks,vegetarian,status\n";
+                csv = "type,name,surname,birthday,address,city,email,iban,bic,study,remarks,vegetarian,status\n";
                 for (i = 1; i < rows.length; i++) {
                     row = rows[i].getElementsByTagName("TD");
                     csv += row[0].innerHTML.replace (/ *\<[^>]*\> */g, "").trim();
