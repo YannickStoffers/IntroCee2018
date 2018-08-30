@@ -74,7 +74,7 @@ class BarbecueView extends FormView
     }
 }
 
-$opened = true;
+$opened = false;
 
 // Create and run home view
 $view = new BarbecueView();
