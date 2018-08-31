@@ -65,6 +65,8 @@ class SignupView extends FormView
         $data['vegetarian'] = empty($data['vegetarian']) ? 0 : 1;
         $data['accept_terms'] = empty($data['accept_terms']) ? 0 : 1;
         $data['accept_costs'] = empty($data['accept_costs']) ? 0 : 1;
+
+        $data['status'] = count ($this->model->get ()) >= 150 ? 'waiting_list' : 'registered';
         
         $this->model->create($data);
 

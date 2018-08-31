@@ -35,12 +35,12 @@
 								}) ) ?>
 							</td>
 							<td>
-								<?= count( array_filter($objects, function ($p)  use ($type) {
+								<?= count( array_filter($objects, function ($p) use ($type) {
 									return $p['type'] === $type && $p['status'] === 'waiting_list';
 								}) ) ?>
 							</td>
 							<td>
-								<?= count( array_filter($objects, function ($p)  use ($type) {
+								<?= count( array_filter($objects, function ($p) use ($type) {
 									return $p['type'] === $type && $p['status'] === 'registered' && $p['vegetarian'] == 1;
 								}) ) ?>
 							</td>
