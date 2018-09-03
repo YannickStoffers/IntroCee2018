@@ -66,7 +66,17 @@ class SignupView extends FormView
         $data['accept_terms'] = empty($data['accept_terms']) ? 0 : 1;
         $data['accept_costs'] = empty($data['accept_costs']) ? 0 : 1;
 
-        $data['status'] = count ($this->model->get ()) >= 150 ? 'waiting_list' : 'registered';
+        if ($data['type'] === 'First-year') {
+            $data['status'] = count( array_filter($this->model->get (), function ($p) {
+                    return $p['status'] === 'registered' && $p['type'] === 'First-year';
+                })) >= 120 ? 'waiting_list' : 'registered';
+        } else {
+            $data['status'] = count( array_filter($this->model->get (), function ($p) {
+                    return $p['status'] === 'registered' && $p['type'] === 'First-year';
+                })) >= 30 ? 'waiting_list' : 'registered';
+        }
+
+        
         
         $this->model->create($data);
 
