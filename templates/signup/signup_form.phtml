@@ -16,15 +16,6 @@
         </div>
     <?php endif ?>
 
-    <?php if (count( get_model('Registration')->get()) >= 150): ?>
-        <div class="alert alert-warning alert-dismissible" role="alert">
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            At this moment all the reserved spots for the introductory camp are taken. You can still sign up, and we recommend to do so, but you will be placed on the waiting list. In case someone still cancels it would mean you still get to come! We will contact you in due time if you are still eligible for joining. 
-            <p>
-            <b>We will not charge you with costs in case you are on the waiting list.</b>
-        </div>
-    <?php endif ?>
-
     <ul class="nav nav-pills nav-justified" role="tablist">
         <li role="presentation" <?php if ($form->get_value('type') == 'First-year'): ?>class="active"<?php endif ?>>
             <a href="#first-year" aria-controls="first-year" role="tab" data-toggle="tab">First-year students</a>
@@ -35,6 +26,17 @@
     </ul>
     <div class="tab-content">
         <div role="tabpanel" class="tab-pane <?=($form->get_value('type') == 'First-year') ? 'active' : '' ?>" id="first-year">
+            <?php if (count( array_filter(get_model('Registration')->get(), function ($p) {
+                    return $p['status'] === 'registered' && $p['type'] === 'First-year';
+                })) >= 120): ?>
+                <p>
+                <div class="alert alert-warning alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    At this moment all the reserved spots for the introductory camp are taken. You can still sign up, and we recommend to do so, but you will be placed on the waiting list. In case someone still cancels it would mean you still get to come! We will contact you in due time if you are still eligible for joining. 
+                    <p>
+                    <b>We will not charge you with costs in case you are on the waiting list.</b>
+                </div>
+            <?php endif ?>
             <form method="POST">
                 <input type="hidden" name="type" value="First-year">
                 <h3>Personal</h3>
@@ -74,6 +76,17 @@
             </form>
         </div>
         <div role="tabpanel" class="tab-pane <?=($form->get_value('type') != 'First-year') ? 'active' : '' ?>" id="senior">
+            <?php if (count( array_filter(get_model('Registration')->get(), function ($p) {
+                    return $p['status'] === 'registered' && $p['type'] !== 'First-year';
+                })) >= 30): ?>
+                <p>
+                <div class="alert alert-warning alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    At this moment all the reserved spots for the introductory camp are taken. You can still sign up, and we recommend to do so, but you will be placed on the waiting list. In case someone still cancels it would mean you still get to come! We will contact you in due time if you are still eligible for joining. 
+                    <p>
+                    <b>We will not charge you with costs in case you are on the waiting list.</b>
+                </div>
+            <?php endif ?>
             <form method="POST">
                 <input type="hidden" name="type" value="Senior">
                 <h3>Personal</h3>
