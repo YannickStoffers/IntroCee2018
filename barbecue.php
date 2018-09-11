@@ -79,7 +79,7 @@ $opened = false;
 // Create and run home view
 $view = new BarbecueView();
 if (!$opened) {
-    $view = new TemplateView ('signups_closed');
+    $view = new TemplateView ('signups_closed_barbecue');
 }
 
 $view->run();

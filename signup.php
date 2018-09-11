@@ -95,7 +95,12 @@ class SignupView extends FormView
     }
 }
 
+$opened = false;
 
 // Create and run home view
 $view = new SignupView();
+if (!$opened) {
+    $view = new TemplateView ('signups_closed');
+}
+
 $view->run();
